@@ -17,9 +17,6 @@ import java.util.List;
 @Entity
 @Table(name = "profiles")
 @DynamicUpdate
-/*@JsonIdentityInfo(
-        generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "id")*/
 public class Profile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,14 +29,9 @@ public class Profile {
     @ManyToMany(mappedBy = "cast", fetch = FetchType.LAZY)
     private List<Film> starringFilms;
 
-    @OneToMany(mappedBy = "director", fetch = FetchType.LAZY) //, cascade = CascadeType.ALL, orphanRemoval = true
+    @OneToMany(mappedBy = "director", fetch = FetchType.LAZY)
     private List<Film> directedFilms;
 
     @Column(unique = true)
     private String url;
-
-    /*@PreRemove
-    private void removeDirectedFilms() {
-        directedFilms.clear();
-    }*/
 }

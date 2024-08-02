@@ -5,5 +5,4 @@ public record ProfileInFilmResponseDTO(
         String name,
         String url
 ) {
-
 }

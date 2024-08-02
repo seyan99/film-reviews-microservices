@@ -7,18 +7,17 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public record ActivityAndReviewCreationDTO(
-        @NotNull
+        @NotNull(message = "Film id cannot be null")
         Long filmId,
-        @NotNull
+        @NotNull(message = "User id cannot be null")
         Long userId,
         @JsonFormat(pattern = "yyyy-MM-dd")
         LocalDate watchedOnDate,
         Boolean watchedThisFilmBefore,
         String reviewContent,
-        @Max(value = 5)
+        @Max(value = 5, message = "Maximum value 5.0")
         Double rating,
         Boolean isLiked,
         Boolean containsSpoilers
 ) {
-
 }

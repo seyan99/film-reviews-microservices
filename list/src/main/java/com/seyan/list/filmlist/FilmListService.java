@@ -11,7 +11,6 @@ import com.seyan.list.entry.ListEntryRepository;
 import com.seyan.list.exception.FilmListNotFoundException;
 import com.seyan.list.film.FilmClient;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +35,6 @@ public class FilmListService {
     }
 
     public FilmList addListComment(Long listId, Long commentId) {
-        //todo controller methods
         FilmList list = filmListRepository.findById(listId).orElseThrow(() -> new FilmListNotFoundException(
                 String.format("No list found with the provided ID: %s", listId)
         ));
@@ -61,10 +59,8 @@ public class FilmListService {
 
         if (!list.getLikedUsersIds().contains(userId)) {
             list.getLikedUsersIds().add(userId);
-            //list.setLikeCount(list.getLikeCount() + 1);
         } else {
             list.getLikedUsersIds().remove(userId);
-            //list.setLikeCount(list.getLikeCount() - 1);
         }
         return filmListRepository.save(list);
     }
@@ -92,7 +88,6 @@ public class FilmListService {
         return filmListMapper.mapFilmIdsToListEntries(listId, filmIdsUnique, addDate);
     }
 
-    //todo add checks for if present and unique/ordering
     @Transactional
     public FilmList updateFilmList(FilmListUpdateDTO dto, Long id) {
         FilmList list = filmListRepository.findById(id).orElseThrow(() -> new FilmListNotFoundException(
@@ -110,7 +105,7 @@ public class FilmListService {
                     .collect(Collectors.partitioningBy(it -> filmIdsUpdate.contains(it.getFilmId())));
 
             List<ListEntry> existingToLeftEntries = existingEntries.get(true).stream().filter(it -> filmIdsUpdate.contains(it.getFilmId())).toList();
-            List<Long> existingToLeftFilmIds = existingToLeftEntries.stream().map(it -> it.getFilmId()).toList();
+            List<Long> existingToLeftFilmIds = existingToLeftEntries.stream().map(ListEntry::getFilmId).toList();
 
             List<Long> newFilmIds = filmIdsUpdate.stream().filter(it -> !existingToLeftFilmIds.contains(it)).toList();
             List<ListEntry> newEntries = mapListUniqueEntries(list.getId(), newFilmIds, updateDate);
@@ -135,9 +130,6 @@ public class FilmListService {
                 String.format("No list found with the provided ID: %s", id)
         ));
     }
-
-    //todo add you watched % of list
-    //todo Popularity All Time This Week This Month This Year
 
     public List<FilmList> getAllFilmLists() {
         return filmListRepository.findAll();

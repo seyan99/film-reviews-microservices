@@ -17,23 +17,7 @@ import java.util.Set;
 public class FilmMapper {
     public Film mapFilmCreationDTOToFilm(FilmCreationDTO dto) {
         Film film = new Film();
-
-                /*film.setTitle(dto.title());
-                film.setDescription(dto.description());
-                film.setReleaseDate(dto.releaseDate());
-                film.setGenre(dto.genre());
-                film.setRunningTimeMinutes(dto.runningTimeMinutes());*/
         BeanUtils.copyProperties(dto, film, getNullFieldNames(dto));
-        /*return Film.builder()
-                .title(dto.title())
-                .description(dto.description())
-                .releaseDate(dto.releaseDate())
-                //.director(dto.director())
-                //.cast(dto.cast())
-                //.genres(dto.genres())
-                .genre(dto.genre())
-                .runningTimeMinutes(dto.runningTimeMinutes())
-                .build();*/
         return film;
     }
 
@@ -103,30 +87,6 @@ public class FilmMapper {
                 .map(this::mapFilmToFilmResponseDTO)
                 .toList();
     }
-
-    /*public PageableUserResponseDTO mapUsersPageToPageableUserResponseDTO(Page<User> usersPage) {
-        List<User> listOfUsers = usersPage.getContent();
-        List<UserProfileResponseDTO> userProfileResponseDTO = mapUserToUserProfileResponseDTO(listOfUsers);
-
-        return PageableUserResponseDTO.builder()
-                .content(userProfileResponseDTO)
-                .pageNo(usersPage.getNumber())
-                .pageSize(usersPage.getSize())
-                .totalElements(usersPage.getTotalElements())
-                .totalPages(usersPage.getTotalPages())
-                .last(usersPage.isLast()).build();
-    }*/
-
-    /*public List<UserProfileResponseDTO> mapUserToUserProfileResponseDTO(List<User> users) {
-        if (users == null) {
-            return null;
-        }
-
-        List<UserProfileResponseDTO> list = users.stream()
-                .map(this::mapUserToUserProfileResponseDTO)
-                .toList();
-        return list;
-    }*/
 
     private String[] getNullFieldNames(Object source) {
         final BeanWrapper src = new BeanWrapperImpl(source);

@@ -1,13 +1,11 @@
 package com.seyan.list.film;
 
 
-import com.seyan.list.responsewrapper.CustomResponseWrapper;
 import com.seyan.list.dto.FilmInFilmListResponseDTO;
+import com.seyan.list.responsewrapper.CustomResponseWrapper;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 

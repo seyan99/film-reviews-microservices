@@ -22,19 +22,6 @@ public class ReviewController {
     private final ReviewService reviewService;
     private final ReviewMapper reviewMapper;
 
-    /*@PostMapping("/create-request")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> createReview(@RequestBody @Valid ActivityReviewDiaryRequest request) {
-        Review review = reviewService.createReview(request);
-        ReviewResponseDTO response = reviewMapper.mapReviewToReviewResponseDTO(review);
-        CustomResponseWrapper<ReviewResponseDTO> wrapper = CustomResponseWrapper.<ReviewResponseDTO>builder()
-                .status(HttpStatus.CREATED.value())
-                .message("Review has been successfully created")
-                .data(response)
-                .build();
-        return new ResponseEntity<>(wrapper, HttpStatus.CREATED);
-    }*/
-
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> createReview(@RequestBody @Valid ReviewCreationDTO dto) {
@@ -54,7 +41,7 @@ public class ReviewController {
         ReviewResponseDTO response = reviewMapper.mapReviewToReviewResponseDTO(review);
         CustomResponseWrapper<ReviewResponseDTO> wrapper = CustomResponseWrapper.<ReviewResponseDTO>builder()
                 .status(HttpStatus.CREATED.value())
-                .message("Review has been successfully created")
+                .message("Comment has been added")
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.CREATED);
@@ -66,7 +53,7 @@ public class ReviewController {
         ReviewResponseDTO response = reviewMapper.mapReviewToReviewResponseDTO(review);
         CustomResponseWrapper<ReviewResponseDTO> wrapper = CustomResponseWrapper.<ReviewResponseDTO>builder()
                 .status(HttpStatus.CREATED.value())
-                .message("Review has been successfully created")
+                .message("Comment has been deleted")
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.CREATED);
@@ -78,7 +65,7 @@ public class ReviewController {
         ReviewResponseDTO response = reviewMapper.mapReviewToReviewResponseDTO(review);
         CustomResponseWrapper<ReviewResponseDTO> wrapper = CustomResponseWrapper.<ReviewResponseDTO>builder()
                 .status(HttpStatus.OK.value())
-                .message("Review has been updated")
+                .message("Review likes has been updated")
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
@@ -107,8 +94,6 @@ public class ReviewController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-
-    //todo /username/films/review (?)
     @GetMapping("/{id}")
     public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> reviewDetails(@PathVariable("id") Long reviewId) {
         Review review = reviewService.getReviewById(reviewId);
@@ -137,7 +122,7 @@ public class ReviewController {
         List<Long> response = reviewService.getFilmIdsBasedOnReviewDateAfter(date);
         CustomResponseWrapper<List<Long>> wrapper = CustomResponseWrapper.<List<Long>>builder()
                 .status(HttpStatus.OK.value())
-                .message("All film ids based on date after")
+                .message(String.format("All film ids based on reviews date after: %s", date))
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);

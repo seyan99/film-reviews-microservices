@@ -13,5 +13,4 @@ public record ActivityOnFilmResponseDTO(
         LocalDate watchlistAddDate,
         Boolean hasReview
 ) {
-
 }

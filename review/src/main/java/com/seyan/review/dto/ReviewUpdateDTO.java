@@ -3,8 +3,6 @@ package com.seyan.review.dto;
 import java.time.LocalDate;
 
 public record ReviewUpdateDTO(
-        //@NotNull
-        //Long id,
         Double rating,
         Boolean isLiked,
         String content,
@@ -12,5 +10,4 @@ public record ReviewUpdateDTO(
         LocalDate watchedOnDate,
         Boolean watchedThisFilmBefore
 ) {
-
 }

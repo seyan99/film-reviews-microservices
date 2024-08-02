@@ -36,6 +36,4 @@ public class User {
     List<Long> followingUsers;
 
     List<Long> followersUsers;
-
-    //List<Long> blockedUsers;
 }

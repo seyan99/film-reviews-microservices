@@ -4,7 +4,6 @@ import com.seyan.activity.dto.ActivityAndReviewCreationDTO;
 import com.seyan.activity.dto.ActivityOnFilmMapper;
 import com.seyan.activity.exception.ActivityDeleteException;
 import com.seyan.activity.exception.ActivityNotFoundException;
-
 import com.seyan.activity.film.FilmClient;
 import com.seyan.activity.responsewrapper.CustomResponseWrapper;
 import com.seyan.activity.review.ReviewClient;
@@ -25,24 +24,11 @@ public class ActivityOnFilmService {
     private final ReviewClient reviewClient;
     private final FilmClient filmClient;
 
-    public ActivityOnFilm getActivitiesForReviewLikes(List<Long> likedUsersIds) {
-        //get user (username, followers, following)
-        //get activity (rating, like)
-        //get review (if present - link to page with particular user reviews for this film)
-        return null;
-    }
-
     public List<ActivityOnFilm> getActivityByUserIdAndByRatingGreaterThan(Long userId, Double rating) {
         return activityRepository.findActivityByUserIdAndByRatingGreaterThan(userId, rating);
     }
 
-    //TODO get as likes
-    public ActivityOnFilm getActivitiesForListLikes(List<Long> likedUsersIds) {
-        return null;
-    }
-
-    //todo add external review entity
-    @Transactional //todo interservice transaction (?)
+    @Transactional
     public ActivityOnFilm createOrUpdateActivity(ActivityAndReviewCreationDTO request) {
         ActivityOnFilm activity = activityMapper.mapActivityAndReviewCreationDTOToActivityOnFilm(request);
 
@@ -56,9 +42,6 @@ public class ActivityOnFilmService {
 
         return activityRepository.save(activity);
     }
-
-    //todo getWatchedListedLikedCount instead of related fields in Film entity
-    // and get rid of FilmService calls from other methods
 
     public List<ActivityOnFilm> getWatchedFilmsActivities(Long userId) {
         return activityRepository.findWatchedFilmsActivities(userId);
@@ -75,7 +58,6 @@ public class ActivityOnFilmService {
         return activityRepository.findLikedFilmsActivities(userId);
     }
 
-    //////////////////////////////////////////////// DEBUG METHODS
     public List<ActivityOnFilm> getAllActivities() {
         return activityRepository.findAll();
     }
@@ -89,9 +71,7 @@ public class ActivityOnFilmService {
                 String.format("No film activity found with the provided ID: %s", id)
         ));
     }
-    ////////////////////////////////////////////////
 
-    //todo make default constructor (?)
     public ActivityOnFilm getOrCreateActivityById(ActivityOnFilmId id) {
         return activityRepository.findById(id).orElseGet(() -> ActivityOnFilm.builder()
                 .id(id)
@@ -103,20 +83,15 @@ public class ActivityOnFilmService {
                 .build());
     }
 
-    //todo kafka queue ?
     @Transactional
     public ActivityOnFilm updateIsLiked(Long userId, Long filmId) {
         ActivityOnFilm activity = getOrCreateActivityById(new ActivityOnFilmId(userId, filmId));
         if (activity.getIsLiked()) {
             activity.setIsLiked(false);
             filmClient.updateLikeCount(filmId, false);
-            //filmService.addLikeCount(filmId, false);
-            //userService.removeFilmFromLiked(userId, filmId);
         } else {
             activity.setIsLiked(true);
             filmClient.updateLikeCount(filmId, true);
-            //filmService.addLikeCount(filmId, true);
-            //userService.addFilmToLiked(userId, filmId);
         }
         return activityRepository.save(activity);
     }
@@ -129,8 +104,7 @@ public class ActivityOnFilmService {
         activity.setIsInWatchlist(false);
         activityRepository.save(activity);
         Double avgRating = getFilmAvgRating(filmId);
-        filmClient.updateAvgRating(filmId, rating);
-        //filmService.updateAvgRating(filmId, avgRating);
+        filmClient.updateAvgRating(filmId, avgRating);
         return activity;
     }
 
@@ -141,7 +115,6 @@ public class ActivityOnFilmService {
         activityRepository.save(activity);
         Double avgRating = getFilmAvgRating(filmId);
         filmClient.updateAvgRating(filmId, avgRating);
-        //filmService.updateAvgRating(filmId, avgRating);
         return activity;
     }
 
@@ -160,27 +133,17 @@ public class ActivityOnFilmService {
                         String.format("Film with the provided ID has rating or reviews and cannot be removed from watched: %s", filmId)
                 );
             }
-
             activity.setIsWatched(false);
-
             filmClient.updateWatchedCount(filmId, false);
-            //filmService.addWatchedCount(filmId, false);
-
-            //userService.removeFilmFromWatched(userId, filmId);
         } else {
             activity.setIsWatched(true);
             activity.setIsInWatchlist(false);
             filmClient.updateWatchedCount(filmId, true);
-            //filmService.addWatchedCount(filmId, true);
-            //userService.addFilmToWatched(userId, filmId);
         }
-
         return activityRepository.save(activity);
     }
 
-    //todo return true if review service is not responding (on microservice layer)
     private boolean checkIfHasReviews(Long userId, Long filmId) {
-        //int reviewCount = reviewService.countUserReviewsForFilm(userId, filmId);
         CustomResponseWrapper<Long> response = reviewClient.countUserReviewsForFilm(userId, filmId)
                 .orElse(CustomResponseWrapper.<Long>builder().data(1L).build());
         Long reviewCount = response.getData();
@@ -200,7 +163,6 @@ public class ActivityOnFilmService {
         return activityRepository.save(activity);
     }
 
-    //todo deleteIfEmpty (?) probably i should never use this method
     private void deleteIfEmpty(ActivityOnFilm activity) {
         if (!activity.getIsWatched()
                 & activity.getRating() == 0.0

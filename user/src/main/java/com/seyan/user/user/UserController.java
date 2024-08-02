@@ -19,6 +19,7 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
+
     public ResponseEntity<User> createUser() {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -49,18 +50,6 @@ public class UserController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    /*@PatchMapping("/{id}/update-phone-number")
-    public ResponseEntity<CustomResponseWrapper<UserResponseDTO>> updatePhoneNumber(@RequestParam String phoneNumber, @PathVariable("id") Long userId) {
-        User updated = userService.updatePhoneNumber(phoneNumber, userId);
-        UserResponseDTO response = userMapper.mapUserToUserResponseDTO(updated);
-        CustomResponseWrapper<UserResponseDTO> wrapper = CustomResponseWrapper.<UserResponseDTO>builder()
-                .status(HttpStatus.OK.value())
-                .message("User's phone number has been updated")
-                .data(response)
-                .build();
-        return new ResponseEntity<>(wrapper, HttpStatus.OK);
-    }*/
-
     @DeleteMapping("/{id}/delete")
     public ResponseEntity<CustomResponseWrapper<UserResponseDTO>> deleteUser(@PathVariable("id") Long userId) {
         userService.deleteUser(userId);
@@ -71,18 +60,6 @@ public class UserController {
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
-
-    /*@GetMapping("/search-by-birth-date")
-    public ResponseEntity<CustomResponseWrapper<List<UserResponseDTO>>> searchByBirthDate(@RequestParam LocalDate from, @RequestParam  LocalDate to) {
-        List<User> users = userService.searchUsersByBirthDate(from, to);
-        List<UserResponseDTO> response = userMapper.mapUserToUserResponseDTO(users);
-        CustomResponseWrapper<List<UserResponseDTO>> wrapper = CustomResponseWrapper.<List<UserResponseDTO>>builder()
-                .status(HttpStatus.OK.value())
-                .message("List of users by birth date from " + from + " to " + to)
-                .data(response)
-                .build();
-        return new ResponseEntity<>(wrapper, HttpStatus.OK);
-    }*/
 
     @GetMapping("/{id}")
     public ResponseEntity<CustomResponseWrapper<UserResponseDTO>> userDetails(@PathVariable("id") Long userId) {
@@ -107,34 +84,4 @@ public class UserController {
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
-
-    /*@GetMapping("/pageable")
-    public ResponseEntity<CustomResponseWrapper<PageableUserResponseDTO>> getPageable(
-            @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
-            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize) {
-        PageableUserResponseDTO allUsersPageable = userService.getAllUsersPageable(pageNo, pageSize);
-
-        CustomResponseWrapper<PageableUserResponseDTO> wrapper = CustomResponseWrapper.<PageableUserResponseDTO>builder()
-                .status(HttpStatus.OK.value())
-                .message("List of all users")
-                .data(allUsersPageable)
-                .build();
-        return new ResponseEntity<>(wrapper, HttpStatus.OK);
-    }*/
-
-    /*api/username
-    api/username/films(watched)
-    api/username/films/diary
-    api/username/films/reviews
-
-    api/username/watchlist
-    api/username/lists
-
-    api/username/likes/films
-    api/username/likes/reviews
-    api/username/likes/lists
-
-    api/username/following
-    api/username/followers
-    api/username/blocked*/
 }

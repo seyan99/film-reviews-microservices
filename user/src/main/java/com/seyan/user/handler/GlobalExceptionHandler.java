@@ -1,8 +1,8 @@
 package com.seyan.user.handler;
 
+import com.seyan.user.exception.EmailAlreadyExistsException;
 import com.seyan.user.exception.UserNotFoundException;
 import com.seyan.user.responsewrapper.ValidationErrorWrapper;
-import com.seyan.user.exception.EmailAlreadyExistsException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

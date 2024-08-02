@@ -14,7 +14,5 @@ public record ReviewResponseDTO(
         Long authorId,
         int reviewLikeCount,
         int commentCount
-        //Boolean watchedThisFilmBefore
 ) {
-
 }

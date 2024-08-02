@@ -32,7 +32,7 @@ public class FilmListMapper {
         }
 
         return filmEntries.stream()
-                .map(it -> it.getFilmId())
+                .map(ListEntry::getFilmId)
                 .toList();
     }
 
@@ -64,7 +64,6 @@ public class FilmListMapper {
     }
 
     public FilmListResponseDTO mapFilmListToFilmListResponseDTO(FilmList filmList) {
-        //List<FilmInFilmListResponseDTO> filmsResponse = mapFilmToFilmInFilmListResponseDTO(films);
         return new FilmListResponseDTO(
                 filmList.getId(),
                 filmList.getUserId(),
@@ -76,7 +75,6 @@ public class FilmListMapper {
                 filmList.getCommentIds().size(),
                 Collections.emptyList(),
                 filmList.getFilmIds().size()
-                //filmsResponse
         );
     }
 

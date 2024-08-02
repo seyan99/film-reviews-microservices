@@ -10,5 +10,4 @@ public record ProfileResponseDTO(
         List<FilmInProfileResponseDTO> directedFilms,
         String url
 ) {
-
 }

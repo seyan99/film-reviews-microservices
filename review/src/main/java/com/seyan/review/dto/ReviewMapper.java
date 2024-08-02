@@ -18,16 +18,6 @@ public class ReviewMapper {
         Review review = new Review();
         BeanUtils.copyProperties(dto, review, getNullFieldNames(dto));
         return review;
-        /*return Review.builder()
-                //.rating(dto.rating())
-                //.isLikedFilm(dto.isLikedFilm())
-                .content(dto.content())
-                .watchedOnDate(dto.watchedOnDate())
-                .filmId(dto.filmId())
-                .userId(dto.userId())
-                .containsSpoilers(dto.containsSpoilers())
-                .watchedThisFilmBefore(dto.watchedThisFilmBefore())
-                .build();*/
     }
 
     public Review mapReviewUpdateDTOToReview(ReviewUpdateDTO source, Review destination) {
@@ -38,9 +28,7 @@ public class ReviewMapper {
         return destination;
     }
 
-    //todo copy properties
     public ReviewResponseDTO mapReviewToReviewResponseDTO(Review review) {
-        //BeanUtils.copyProperties(profile, response);
         return new ReviewResponseDTO(
                 review.getId(),
                 review.getRating(),
@@ -55,19 +43,6 @@ public class ReviewMapper {
                 review.getCommentIds().size()
         );
     }
-
-    /*public PageableUserResponseDTO mapUsersPageToPageableUserResponseDTO(Page<User> usersPage) {
-        List<User> listOfUsers = usersPage.getContent();
-        List<UserProfileResponseDTO> userProfileResponseDTO = mapUserToUserProfileResponseDTO(listOfUsers);
-
-        return PageableUserResponseDTO.builder()
-                .content(userProfileResponseDTO)
-                .pageNo(usersPage.getNumber())
-                .pageSize(usersPage.getSize())
-                .totalElements(usersPage.getTotalElements())
-                .totalPages(usersPage.getTotalPages())
-                .last(usersPage.isLast()).build();
-    }*/
 
     public List<ReviewResponseDTO> mapReviewToReviewResponseDTO(List<Review> reviews) {
         if (reviews == null) {
@@ -93,10 +68,4 @@ public class ReviewMapper {
         String[] result = new String[fieldNames.size()];
         return fieldNames.toArray(result);
     }
-
-    /*public Review mapActivityReviewDiaryRequestToReview(ActivityAndReviewCreationDTO request) {
-        Review review = new Review();
-        BeanUtils.copyProperties(request, review, getNullFieldNames(request));
-        return review;
-    }*/
 }

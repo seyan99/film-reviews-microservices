@@ -9,7 +9,6 @@ import java.util.List;
 
 public interface ListEntryRepository extends JpaRepository<ListEntry, ListEntryId> {
     List<ListEntry> findByListId(Long listId);
-    List<Long> findFilmIdByListId(Long listId);
 
     @Modifying
     @Query(value = "delete from entries where list_id = :listId", nativeQuery = true)

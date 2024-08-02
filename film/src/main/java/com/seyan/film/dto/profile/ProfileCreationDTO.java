@@ -12,5 +12,4 @@ public record ProfileCreationDTO(
         List<Long> starringFilmsId,
         List<Long> directedFilmsId
 ) {
-
 }

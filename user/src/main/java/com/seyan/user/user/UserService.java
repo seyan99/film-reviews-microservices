@@ -37,7 +37,6 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    //todo make pageable
     public List<User> getFollowingUsers(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(
                 String.format("No user found with the provided ID: %s", id)
@@ -46,7 +45,6 @@ public class UserService {
         return userRepository.findAllById(user.followingUsers);
     }
 
-    //todo make pageable
     public List<User> getFollowersUsers(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(
                 String.format("No user found with the provided ID: %s", id)

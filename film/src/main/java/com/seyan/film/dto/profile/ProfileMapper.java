@@ -19,9 +19,6 @@ public class ProfileMapper {
         return Profile.builder()
                 .name(dto.name())
                 .biography(dto.biography())
-                // starring and directed wouldn't update from profile entity
-                //.starringFilms(dto.starringFilms())
-                //.directedFilms(dto.directedFilms())
                 .build();
     }
 
@@ -58,21 +55,6 @@ public class ProfileMapper {
         }
         return new FilmInProfileResponseDTO(film.getId(), film.getTitle(), film.getUrl());
     }
-
-
-
-    /*public PageableUserResponseDTO mapUsersPageToPageableUserResponseDTO(Page<User> usersPage) {
-        List<User> listOfUsers = usersPage.getContent();
-        List<UserProfileResponseDTO> userProfileResponseDTO = mapUserToUserProfileResponseDTO(listOfUsers);
-
-        return PageableUserResponseDTO.builder()
-                .content(userProfileResponseDTO)
-                .pageNo(usersPage.getNumber())
-                .pageSize(usersPage.getSize())
-                .totalElements(usersPage.getTotalElements())
-                .totalPages(usersPage.getTotalPages())
-                .last(usersPage.isLast()).build();
-    }*/
 
     public List<ProfileResponseDTO> mapProfileToProfileResponseDTO(List<Profile> profiles) {
         if (profiles == null) {

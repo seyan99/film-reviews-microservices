@@ -2,8 +2,8 @@ package com.seyan.list.filmlist;
 
 import com.seyan.list.comment.CommentResponseDTO;
 import com.seyan.list.dto.*;
-import com.seyan.list.responsewrapper.CustomResponseWrapper;
 import com.seyan.list.entry.ListEntry;
+import com.seyan.list.responsewrapper.CustomResponseWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -43,14 +43,12 @@ public class FilmListController {
     public ResponseEntity<CustomResponseWrapper<FilmListResponseDTO>> addListComment(@RequestParam("listId") Long listId, @RequestParam("commentId") Long commentId) {
 
         FilmList list = filmListService.addListComment(listId, commentId);
-        //List<FilmInFilmListResponseDTO> films = filmListService.getFilmsFromList(dto.filmIds());
 
         FilmListResponseDTO response = filmListMapper.mapFilmListToFilmListResponseDTO(list);
-        //response.setFilms(films);
 
         CustomResponseWrapper<FilmListResponseDTO> wrapper = CustomResponseWrapper.<FilmListResponseDTO>builder()
                 .status(HttpStatus.CREATED.value())
-                .message("List has been successfully created")
+                .message("Comment has been added")
                 .data(response)
                 .build();
 
@@ -61,14 +59,12 @@ public class FilmListController {
     public ResponseEntity<CustomResponseWrapper<FilmListResponseDTO>> deleteListComment(@RequestParam("listId") Long listId, @RequestParam("commentId") Long commentId) {
 
         FilmList list = filmListService.deleteListComment(listId, commentId);
-        //List<FilmInFilmListResponseDTO> films = filmListService.getFilmsFromList(dto.filmIds());
 
         FilmListResponseDTO response = filmListMapper.mapFilmListToFilmListResponseDTO(list);
-        //response.setFilms(films);
 
         CustomResponseWrapper<FilmListResponseDTO> wrapper = CustomResponseWrapper.<FilmListResponseDTO>builder()
                 .status(HttpStatus.CREATED.value())
-                .message("List has been successfully created")
+                .message("Comment has been added deleted")
                 .data(response)
                 .build();
 
@@ -79,12 +75,8 @@ public class FilmListController {
     public ResponseEntity<CustomResponseWrapper<FilmListResponseDTO>> updateListLikes(@RequestParam("listId") Long listId, @RequestParam("userId") Long userId) {
 
         FilmList list = filmListService.updateListLikes(listId, userId);
-        //List<Long> filmIds = list.getFilmIds().stream().sorted(Comparator.comparing(ListEntry::getEntryOrder)).map(ListEntry::getFilmId).toList();
-
-        //List<FilmInFilmListResponseDTO> films = filmListService.getFilmsFromList(filmIds);
 
         FilmListResponseDTO response = filmListMapper.mapFilmListToFilmListResponseDTO(list);
-        //response.setFilms(films);
 
         CustomResponseWrapper<FilmListResponseDTO> wrapper = CustomResponseWrapper.<FilmListResponseDTO>builder()
                 .status(HttpStatus.OK.value())
@@ -94,8 +86,6 @@ public class FilmListController {
 
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
-
-    //todo /username/list/listname/edit/
 
     @PatchMapping("/{listId}/update")
     public ResponseEntity<CustomResponseWrapper<FilmListResponseDTO>> updateFilmList(@RequestBody @Valid FilmListUpdateDTO dto, @PathVariable("listId") Long listId) {

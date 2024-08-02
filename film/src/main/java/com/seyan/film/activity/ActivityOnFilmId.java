@@ -1,9 +1,7 @@
 package com.seyan.film.activity;
 
-import jakarta.persistence.Embeddable;
-import lombok.*;
-
-import java.io.Serializable;
+import lombok.Getter;
+import lombok.ToString;
 
 @ToString
 @Getter

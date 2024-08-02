@@ -20,5 +20,4 @@ public record FilmResponseDTO(
         Long listCount,
         Long likeCount
 ) {
-
 }

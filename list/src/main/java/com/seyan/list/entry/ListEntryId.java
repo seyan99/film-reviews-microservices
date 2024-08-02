@@ -17,7 +17,4 @@ import java.io.Serializable;
 public class ListEntryId implements Serializable {
     private Long listId;
     private Long filmId;
-
-    //todo delete class
-
 }

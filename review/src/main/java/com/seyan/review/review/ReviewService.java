@@ -18,13 +18,9 @@ import java.util.List;
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewMapper reviewMapper;
-
-    //private final CommentService commentService;
-
-    private final ActivityClient activityOnFilmService;
+    private final ActivityClient activityClient;
 
     public Review addReviewComment(Long reviewId, Long commentId) {
-        //todo add review comment
         Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewNotFoundException(
                 String.format("No review found with the provided ID: %s", reviewId)
         ));
@@ -49,15 +45,13 @@ public class ReviewService {
 
         if (review.getLikedUsersIds().contains(userId)) {
             review.getLikedUsersIds().remove(userId);
-            //review.setLikeCount(review.getLikeCount() + 1);
         } else {
             review.getLikedUsersIds().add(userId);
-            //review.setLikeCount(review.getLikeCount() - 1);
         }
         return reviewRepository.save(review);
     }
 
-    @Transactional //todo interservice transaction
+    @Transactional
     public Review createReview(ReviewCreationDTO dto) {
         int reviewsCount = reviewRepository.countByUserIdAndFilmIdAndContentNotNull(dto.userId(), dto.filmId());
 
@@ -65,16 +59,11 @@ public class ReviewService {
         Review saved = reviewRepository.save(review);
 
         if (reviewsCount < 1 && dto.content() != null) {
-            activityOnFilmService.updateHasReview(dto.userId(), dto.filmId());
+            activityClient.updateHasReview(dto.userId(), dto.filmId());
         }
 
         return saved;
     }
-
-    /*public Review createReview(ActivityAndReviewCreationDTO request) {
-        Review review = reviewMapper.mapActivityReviewDiaryRequestToReview(request);
-        return reviewRepository.save(review);
-    }*/
 
     public Review getReviewById(Long id) {
         return reviewRepository.findById(id).orElseThrow(() -> new ReviewNotFoundException(
@@ -82,7 +71,6 @@ public class ReviewService {
         ));
     }
 
-    //todo add sorting by your reviews and your network reviews
     public List<Review> getReviewsByFilmId(Long filmId) {
         return reviewRepository.findByFilmIdAndContentNotNull(filmId).stream()
                 .sorted(Comparator.comparing(Review::getCreationDate).reversed())
@@ -107,8 +95,6 @@ public class ReviewService {
                 .toList();
     }
 
-    //todo get by /username/film/film-title
-
     public List<Review> getAllReviews() {
         return reviewRepository.findAll();
     }
@@ -122,8 +108,7 @@ public class ReviewService {
         return reviewRepository.save(mapped);
     }
 
-
-    @Transactional //todo interservice transaction
+    @Transactional
     public void deleteReview(Long id) {
         Review review = reviewRepository.findById(id).orElseThrow(() -> new ReviewNotFoundException(
                 String.format("Cannot delete review:: No review found with the provided ID: %s", id)));
@@ -133,7 +118,7 @@ public class ReviewService {
         int reviewsCount = reviewRepository.countByUserIdAndFilmIdAndContentNotNull(review.getUserId(), review.getFilmId());
 
         if (reviewsCount == 0) {
-            activityOnFilmService.updateHasReview(review.getUserId(), review.getFilmId());
+            activityClient.updateHasReview(review.getUserId(), review.getFilmId());
         }
     }
 
@@ -143,10 +128,6 @@ public class ReviewService {
 
     public List<Long> getFilmIdsBasedOnReviewDateAfter(LocalDate date) {
         return reviewRepository.findFilmIdBasedOnReviewCreationDateAfter(date);
-    }
-
-    public List<Long> getFilmIdsBasedOnReviewDateBefore(LocalDate date) {
-        return reviewRepository.findFilmIdBasedOnReviewCreationDateBefore(date);
     }
 
     public List<Long> getAllFilmIds() {

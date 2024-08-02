@@ -4,7 +4,6 @@ import com.seyan.film.dto.profile.ProfileCreationDTO;
 import com.seyan.film.dto.profile.ProfileMapper;
 import com.seyan.film.dto.profile.ProfileUpdateDTO;
 import com.seyan.film.exception.FilmNotFoundException;
-
 import com.seyan.film.exception.ProfileNotFoundException;
 import com.seyan.film.film.Film;
 import com.seyan.film.film.FilmRepository;
@@ -40,11 +39,10 @@ public class ProfileService {
     }
 
     private Profile createUrl(Profile profile) {
-        //todo fix count when profiles were deleted
         String[] name = profile.getName().toLowerCase().split(" ");
         StringBuilder urlBuilder = new StringBuilder();
 
-        for (int i = 0; i <name.length - 1; i++) {
+        for (int i = 0; i < name.length - 1; i++) {
             urlBuilder.append(name[i]).append("-");
         }
         urlBuilder.append(name[name.length - 1]);
@@ -64,7 +62,6 @@ public class ProfileService {
     }
 
     public Profile getProfileByUrl(String profileUrl) {
-        //todo change throw msg???
         return profileRepository.findByUrl(profileUrl).orElseThrow(() -> new ProfileNotFoundException(
                 String.format("No profile found with the provided url: %s", profileUrl)
         ));
@@ -96,7 +93,6 @@ public class ProfileService {
         profileRepository.deleteById(id);
     }
 
-    //todo get all by name containing
     public List<Profile> getAllProfilesByName(String name) {
         String[] split = name.split("-");
         StringBuilder builder = new StringBuilder();

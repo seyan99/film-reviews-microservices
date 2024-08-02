@@ -3,6 +3,7 @@ package com.seyan.list.filmlist;
 import com.seyan.list.entry.ListEntry;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 import org.hibernate.annotations.DynamicUpdate;
@@ -16,8 +17,7 @@ import java.util.Set;
 @ToString
 @Data
 @AllArgsConstructor
-//@NoArgsConstructor
-//@Builder
+@Builder
 @Entity
 @Table(name = "lists")
 @DynamicUpdate
@@ -30,21 +30,13 @@ public class FilmList {
     private String description;
     @Enumerated(EnumType.STRING)
     private Privacy privacy;
-
-   // private Long likeCount;
     private Set<Long> likedUsersIds;
-
-    //private Long commentCount;
     private Set<Long> commentIds;
-
-    @OneToMany(cascade=CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "list_id", referencedColumnName = "id")
     private List<ListEntry> filmIds = new ArrayList<>();
-
     private LocalDateTime creationDate;
-
     private LocalDateTime lastUpdateDate;
-    //todo you watched method
 
     public FilmList() {
         this.likedUsersIds = new HashSet<>();

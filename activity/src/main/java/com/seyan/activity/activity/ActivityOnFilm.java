@@ -1,6 +1,8 @@
 package com.seyan.activity.activity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,10 +19,6 @@ import java.time.LocalDate;
 @Table(name = "activity_on_film")
 @DynamicUpdate
 public class ActivityOnFilm {
-    /*@Id
-    private Long userId;
-    @Id
-    private Long filmId;*/
     @EmbeddedId
     private ActivityOnFilmId id;
     private Boolean isWatched;
@@ -28,13 +26,5 @@ public class ActivityOnFilm {
     private Boolean isInWatchlist;
     private Double rating;
     private LocalDate watchlistAddDate;
-
     private Boolean hasReview;
-    //private Long lastReviewId;
-    //@OneToMany(fetch = FetchType.LAZY)
-    //private List<Long> filmReviewIds;
-
-    //todo relation
-    //@OneToOne
-    //private Review review;
 }

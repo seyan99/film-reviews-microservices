@@ -22,7 +22,7 @@ public class CommentService {
     private final ReviewClient reviewClient;
     private final FilmListClient filmListClient;
 
-    @Transactional //todo interservice transaction(?)
+    @Transactional
     public Comment createComment(CommentCreationDTO dto, PostType postType) {
         Comment comment = commentMapper.mapCommentCreationDTOToComment(dto);
         comment.setPostType(postType);
@@ -44,7 +44,6 @@ public class CommentService {
         ));
     }
 
-    //todo reversed on db level
     public List<Comment> getCommentsByPost(Long postId, PostType postType) {
         return commentRepository.findByPostIdAndPostType(postId, postType)
                 .stream()
@@ -67,7 +66,7 @@ public class CommentService {
         return commentRepository.save(mapped);
     }
 
-    @Transactional //todo interservice transaction(?)
+    @Transactional
     public void deleteComment(Long id) {
         Comment comment = commentRepository.findById(id).orElseThrow(() -> new CommentNotFoundException(
                 String.format("Cannot delete comment:: No comment found with the provided ID: %s", id)));

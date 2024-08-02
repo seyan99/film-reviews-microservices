@@ -2,16 +2,15 @@ package com.seyan.film.film;
 
 import com.seyan.film.activity.ActivityClient;
 import com.seyan.film.activity.ActivityOnFilmResponseDTO;
-import com.seyan.film.review.ReviewClient;
-
-import com.seyan.film.exception.FilmNotFoundException;
-import com.seyan.film.exception.SortingParametersException;
-import com.seyan.film.exception.ProfileNotFoundException;
 import com.seyan.film.dto.film.FilmCreationDTO;
 import com.seyan.film.dto.film.FilmMapper;
 import com.seyan.film.dto.film.FilmUpdateDTO;
+import com.seyan.film.exception.FilmNotFoundException;
+import com.seyan.film.exception.ProfileNotFoundException;
+import com.seyan.film.exception.SortingParametersException;
 import com.seyan.film.profile.Profile;
 import com.seyan.film.profile.ProfileRepository;
+import com.seyan.film.review.ReviewClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,14 +29,8 @@ public class FilmService {
     private final FilmMapper filmMapper;
     private final ProfileRepository profileRepository;
     private final ActivityClient activityClient;
-
-    //todo replace review service with controller methods
     private final ReviewClient reviewClient;
 
-
-
-    //todo add check for existing director and cast members in db
-    //todo actually director is not updating
     public Film createFilm(FilmCreationDTO dto) {
         Film film = filmMapper.mapFilmCreationDTOToFilm(dto);
 
@@ -49,7 +42,6 @@ public class FilmService {
         }
 
         if (dto.castIdList() != null) {
-            //todo create this as a method (also use in add cast)
             List<Profile> foundInDatabaseCastList = profileRepository.findAllById(dto.castIdList());
             if (dto.castIdList().size() != foundInDatabaseCastList.size()) {
                 List<Long> foundCastIdList = foundInDatabaseCastList.stream().map(Profile::getId).toList();
@@ -58,7 +50,6 @@ public class FilmService {
                         String.format("Some profiles from the provided ID list were not found : %s", dto.castIdList()));
             }
             film.getCast().addAll(foundInDatabaseCastList);
-            //foundCastList.forEach(film.getCast()::add);
         }
 
         Film withUrl = createUrl(film);
@@ -66,7 +57,6 @@ public class FilmService {
     }
 
     private Film createUrl(Film film) {
-        //todo fix count when films were deleted
         String[] title = film.getTitle().toLowerCase().split(" ");
         StringBuilder urlBuilder = new StringBuilder();
 
@@ -196,9 +186,7 @@ public class FilmService {
         filmRepository.deleteById(id);
     }
 
-    //todo should parse expression with "+"
     public List<Film> getAllFilmsByTitle(String title) {
-        //String[] splitTitle = title.split("+");
 
         String[] split = title.split("-");
         StringBuilder builder = new StringBuilder();
@@ -217,7 +205,6 @@ public class FilmService {
         ));
     }
 
-    //todo get id from authentication principal(?)
     public List<Film> getAllFilmsWithParams(Map<String, String> params, Long userId) {
         Stream<Film> stream;
 
@@ -296,7 +283,6 @@ public class FilmService {
         List<ActivityOnFilmResponseDTO> activityList = activityClient.getActivityByUserIdAndByRatingGreaterThan(userId, 0.0).getData();
         Map<Long, Double> filmIdAndRatingList = activityList.stream().collect(Collectors.toMap(it -> it.id().getFilmId(), ActivityOnFilmResponseDTO::rating));
 
-        //stream divided on two collections: with & without rating
         Map<Boolean, List<Film>> filmLists = stream
                 .collect(Collectors.partitioningBy(film -> filmIdAndRatingList.containsKey(film.getId())));
 
@@ -325,7 +311,6 @@ public class FilmService {
         }
     }
 
-    //todo rework if genre more than one for entity, sort by position of genre appearance in list
     private Stream<Film> filterFilmsByGenre(Stream<Film> stream, String genre) {
         return stream.filter(it -> it.getGenre().equals(Genre.valueOf(genre)));
     }
@@ -350,7 +335,6 @@ public class FilmService {
         return stream.filter(it -> it.getReleaseDate().getYear() == yearParsed);
     }
 
-    //todo if review service is down - reply with all films
     private Stream<Film> filterFilmsByPopularity(String popularity) {
         switch (popularity) {
             case "all-time" -> {
@@ -372,7 +356,6 @@ public class FilmService {
         }
     }
 
-    //todo if review service not responding return all films
     private List<Film> getFilmsBasedOnReviewDateAfter(LocalDate date) {
         List<Long> filmIdList = reviewClient.getFilmIdsBasedOnReviewDateAfter(date).getData();
         List<Long> filmIdListSorted = filmIdList.stream().sorted(Comparator.comparing(it -> Collections.frequency(filmIdList, it)).reversed()).distinct().toList();
@@ -422,28 +405,4 @@ public class FilmService {
             }
         }
     }
-
-    //todo based on likes - get films with similar genre(???)
-    //todo based on related - get sequels(films from one collection) and then with genre
-    /*private Stream<Film> filterFilmsByYourInterest(Stream<Film> stream, String interest, Long userId) {
-        List<Long> likedFilms = userService.getLikedFilms(userId);
-        Map<Boolean, List<Film>> filmLists = stream
-                .collect(Collectors.partitioningBy(film -> likedFilms.contains(film.getId())));
-
-        List<Genre> likedFilmsGenre = filmLists.get(true).stream().map(Film::getGenre).distinct().toList();
-        List<Film> filmsWithoutRating = filmLists.get(false);
-
-        switch (interest) {
-            case "liked" -> {
-                return stream.sorted(Comparator.comparing(Film::getRunningTimeMinutes));
-            }
-            case "related" -> {
-                return stream.sorted(Comparator.comparing(Film::getRunningTimeMinutes).reversed());
-            }
-            default -> {
-                throw new SortingParametersException(
-                        "Could not parse length parameter, should be \"shortest\" or \"longest\"");
-            }
-        }
-    }*/
 }

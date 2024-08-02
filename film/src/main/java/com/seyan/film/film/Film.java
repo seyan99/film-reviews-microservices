@@ -16,7 +16,6 @@ import java.util.Set;
 @Data
 @Builder
 @AllArgsConstructor
-//@NoArgsConstructor
 @Entity
 @Table(name = "films")
 @DynamicUpdate
@@ -34,7 +33,6 @@ public class Film {
 
     private LocalDate releaseDate;
 
-    //todo url
     @Column(unique = true)
     private String url;
 
@@ -61,11 +59,6 @@ public class Film {
     private Long listCount;
 
     private Long likeCount;
-
-    //private List<Long> castProfiles;
-
-    /*@Enumerated(EnumType.STRING)
-    private List<Genre> genres;*/
 
     public Film() {
         this.avgRating = 0.0;
