@@ -7,23 +7,27 @@ spring:
         locator:
           enabled: true
       routes:
-        - id: customer-service
-          uri: lb:http://CUSTOMER-SERVICE
+        - id: user-service
+          uri: lb:http://USER-SERVICE
           predicates:
-            - Path=/api/v1/customers/**
-        - id: order-service
-          uri: lb:http://ORDER-SERVICE
+            - Path=/api/v1/users/**
+        - id: activity-service
+          uri: lb:http://ACTIVITY-SERVICE
           predicates:
-            - Path=/api/v1/orders/**
-        - id: order-lines-service
-          uri: lb:http://ORDER-SERVICE
+            - Path=/api/v1/activities/**
+        - id: film-service
+          uri: lb:http://FILM-SERVICE
           predicates:
-            - Path=/api/v1/order-lines/**
-        - id: product-service
-          uri: lb:http://PRODUCT-SERVICE
+            - Path=/api/v1/films/**
+        - id: review-service
+          uri: lb:http://REVIEW-SERVICE
           predicates:
-            - Path=/api/v1/products/**
-        - id: payment-service
-          uri: lb:http://PAYMENT-SERVICE
+            - Path=/api/v1/reviews/**
+        - id: list-service
+          uri: lb:http://LIST-SERVICE
           predicates:
-            - Path=/api/v1/payments/**
+            - Path=/api/v1/lists/**
+        - id: comment-service
+          uri: lb:http://COMMENT-SERVICE
+          predicates:
+            - Path=/api/v1/comments/**

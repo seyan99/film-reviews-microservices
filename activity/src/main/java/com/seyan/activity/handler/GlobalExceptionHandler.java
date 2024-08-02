@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ActivityNotFoundException.class)
-    public ResponseEntity<ErrorObject> handleUserNotFoundException(ActivityNotFoundException ex) {
+    public ResponseEntity<ErrorObject> handleActivityNotFoundException(ActivityNotFoundException ex) {
         ErrorObject errorObject = ErrorObject.builder()
                 .status(HttpStatus.NOT_FOUND.value())
                 .message(ex.getMessage())
@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ActivityDeleteException.class)
-    public ResponseEntity<ErrorObject> handleIncorrectDateRangeException(ActivityDeleteException ex) {
+    public ResponseEntity<ErrorObject> handleActivityDeleteException(ActivityDeleteException ex) {
         ErrorObject errorObject = ErrorObject.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message(ex.getMessage())

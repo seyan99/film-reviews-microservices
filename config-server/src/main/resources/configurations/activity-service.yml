@@ -3,7 +3,8 @@ server:
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/activity-service
+#    url: jdbc:postgresql://localhost:5432/activity-servicereview-monolith
+    url: jdbc:postgresql://localhost:5432/review-monolith
     username: seyan99
     password: 1111
   jpa:

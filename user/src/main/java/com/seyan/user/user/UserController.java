@@ -1,10 +1,10 @@
 package com.seyan.user.user;
 
-import com.seyan.reviewmonolith.responseWrapper.CustomResponseWrapper;
-import com.seyan.reviewmonolith.user.dto.UserCreationDTO;
-import com.seyan.reviewmonolith.user.dto.UserMapper;
-import com.seyan.reviewmonolith.user.dto.UserResponseDTO;
-import com.seyan.reviewmonolith.user.dto.UserUpdateDTO;
+import com.seyan.user.dto.UserCreationDTO;
+import com.seyan.user.dto.UserMapper;
+import com.seyan.user.dto.UserResponseDTO;
+import com.seyan.user.dto.UserUpdateDTO;
+import com.seyan.user.responsewrapper.CustomResponseWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

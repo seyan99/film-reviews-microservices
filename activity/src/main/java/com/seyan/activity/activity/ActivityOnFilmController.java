@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/activities")
 @RestController
 public class ActivityOnFilmController {
     private final ActivityOnFilmService activityService;
     private final ActivityOnFilmMapper activityMapper;
 
-    @GetMapping("/activity/all")
+    @GetMapping("/all")
     public ResponseEntity<CustomResponseWrapper<List<ActivityOnFilmResponseDTO>>> getAllActivities() {
         List<ActivityOnFilm> activityList = activityService.getAllActivities();
         List<ActivityOnFilmResponseDTO> response = activityMapper.mapActivityOnFilmToActivityOnFilmResponse(activityList);
@@ -43,7 +43,20 @@ public class ActivityOnFilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @PostMapping("/activity/create-update")
+    @GetMapping("/by-user-id-and-rating")
+    public ResponseEntity<CustomResponseWrapper<List<ActivityOnFilmResponseDTO>>> getActivityByUserIdAndByRatingGreaterThan(@RequestParam("userId") Long userId,
+                                                                                                                            @RequestParam("rating") Double rating) {
+        List<ActivityOnFilm> activityList = activityService.getActivityByUserIdAndByRatingGreaterThan(userId, rating);
+        List<ActivityOnFilmResponseDTO> response = activityMapper.mapActivityOnFilmToActivityOnFilmResponse(activityList);
+        CustomResponseWrapper<List<ActivityOnFilmResponseDTO>> wrapper = CustomResponseWrapper.<List<ActivityOnFilmResponseDTO>>builder()
+                .status(HttpStatus.OK.value())
+                .message(String.format("All activities of user with ID: %s", userId))
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @PostMapping("/create-update")
     public ResponseEntity<CustomResponseWrapper<ActivityOnFilmResponseDTO>> createOrUpdateActivity(@RequestBody @Valid ActivityAndReviewCreationDTO request) {
         ActivityOnFilm activity = activityService.createOrUpdateActivity(request);
         ActivityOnFilmResponseDTO response = activityMapper.mapActivityOnFilmToActivityOnFilmResponse(activity);
@@ -91,7 +104,7 @@ public class ActivityOnFilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/activity")
+    @GetMapping("/on-film")
     public ResponseEntity<CustomResponseWrapper<ActivityOnFilmResponseDTO>> getFilmActivity(@RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId) {
         ActivityOnFilm activity = activityService.getOrCreateActivityById(new ActivityOnFilmId(userId, filmId));
         ActivityOnFilmResponseDTO response = activityMapper.mapActivityOnFilmToActivityOnFilmResponse(activity);
@@ -103,7 +116,20 @@ public class ActivityOnFilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @PatchMapping("/activity/update-is-liked")
+    @PatchMapping("/update-has-review")
+    public ResponseEntity<CustomResponseWrapper<ActivityOnFilmResponseDTO>> updateHasReview(
+            @RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId) {
+        ActivityOnFilm activity = activityService.updateHasReview(userId, filmId);
+        ActivityOnFilmResponseDTO response = activityMapper.mapActivityOnFilmToActivityOnFilmResponse(activity);
+        CustomResponseWrapper<ActivityOnFilmResponseDTO> wrapper = CustomResponseWrapper.<ActivityOnFilmResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message("Has review status has been updated")
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @PatchMapping("/update-is-liked")
     public ResponseEntity<CustomResponseWrapper<ActivityOnFilmResponseDTO>> updateIsLiked(
             @RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId) {
         ActivityOnFilm activity = activityService.updateIsLiked(userId, filmId);
@@ -116,7 +142,7 @@ public class ActivityOnFilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @PatchMapping("/activity/update-rating")
+    @PatchMapping("/update-rating")
     public ResponseEntity<CustomResponseWrapper<ActivityOnFilmResponseDTO>> updateRating(
             @RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId, @RequestBody Double rating) {
         ActivityOnFilm activity = activityService.updateRating(userId, filmId, rating);
@@ -129,7 +155,7 @@ public class ActivityOnFilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @PatchMapping("/activity/remove-rating")
+    @PatchMapping("/remove-rating")
     public ResponseEntity<CustomResponseWrapper<ActivityOnFilmResponseDTO>> removeRating(
             @RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId) {
 
@@ -143,7 +169,7 @@ public class ActivityOnFilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @PatchMapping("/activity/update-is-watched")
+    @PatchMapping("/update-is-watched")
     public ResponseEntity<CustomResponseWrapper<ActivityOnFilmResponseDTO>> updateIsWatched(
             @RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId) {
 
@@ -157,7 +183,7 @@ public class ActivityOnFilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @PatchMapping("/activity/update-is-in-watchlist")
+    @PatchMapping("/update-is-in-watchlist")
     public ResponseEntity<CustomResponseWrapper<ActivityOnFilmResponseDTO>> updateIsInWatchlist(
             @RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId) {
 

@@ -1,7 +1,7 @@
 package com.seyan.comment.dto;
 
 
-import com.seyan.reviewmonolith.comment.Comment;
+import com.seyan.comment.comment.Comment;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;

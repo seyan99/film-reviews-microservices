@@ -1,0 +1,22 @@
+package com.seyan.film.activity;
+
+
+import com.seyan.film.responsewrapper.CustomResponseWrapper;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+
+@FeignClient(
+        name = "activity-service",
+        url = "${application.config.activity-url}"
+)
+public interface ActivityClient {
+
+    @GetMapping("/by-user-id-and-rating")
+    public CustomResponseWrapper<List<ActivityOnFilmResponseDTO>> getActivityByUserIdAndByRatingGreaterThan(
+            @RequestParam("userId") Long userId,
+            @RequestParam("rating") Double rating);
+}

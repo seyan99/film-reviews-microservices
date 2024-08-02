@@ -1,12 +1,10 @@
 package com.seyan.review.review;
 
-import com.seyan.reviewmonolith.activity.ActivityOnFilmService;
-import com.seyan.reviewmonolith.activity.dto.ActivityAndReviewCreationDTO;
-import com.seyan.reviewmonolith.comment.CommentService;
-import com.seyan.reviewmonolith.exception.review.ReviewNotFoundException;
-import com.seyan.reviewmonolith.review.dto.ReviewCreationDTO;
-import com.seyan.reviewmonolith.review.dto.ReviewMapper;
-import com.seyan.reviewmonolith.review.dto.ReviewUpdateDTO;
+import com.seyan.review.activity.ActivityClient;
+import com.seyan.review.dto.ReviewCreationDTO;
+import com.seyan.review.dto.ReviewMapper;
+import com.seyan.review.dto.ReviewUpdateDTO;
+import com.seyan.review.exception.ReviewNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,27 +19,27 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewMapper reviewMapper;
 
-    private final CommentService commentService;
+    //private final CommentService commentService;
 
-    private final ActivityOnFilmService activityOnFilmService;
+    private final ActivityClient activityOnFilmService;
 
-    public void addReviewComment(Long reviewId, Long commentId) {
+    public Review addReviewComment(Long reviewId, Long commentId) {
         //todo add review comment
         Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewNotFoundException(
                 String.format("No review found with the provided ID: %s", reviewId)
         ));
 
         review.getCommentIds().add(commentId);
-        reviewRepository.save(review);
+        return reviewRepository.save(review);
     }
 
-    public void deleteReviewComment(Long reviewId, Long commentId) {
+    public Review deleteReviewComment(Long reviewId, Long commentId) {
         Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewNotFoundException(
                 String.format("No review found with the provided ID: %s", reviewId)
         ));
 
         review.getCommentIds().remove(commentId);
-        reviewRepository.save(review);
+        return reviewRepository.save(review);
     }
 
     public Review updateReviewLikes(Long reviewId, Long userId) {
@@ -73,10 +71,10 @@ public class ReviewService {
         return saved;
     }
 
-    public Review createReview(ActivityAndReviewCreationDTO request) {
+    /*public Review createReview(ActivityAndReviewCreationDTO request) {
         Review review = reviewMapper.mapActivityReviewDiaryRequestToReview(request);
         return reviewRepository.save(review);
-    }
+    }*/
 
     public Review getReviewById(Long id) {
         return reviewRepository.findById(id).orElseThrow(() -> new ReviewNotFoundException(
@@ -143,11 +141,11 @@ public class ReviewService {
         return reviewRepository.countByUserIdAndFilmId(userId, filmId);
     }
 
-    public List<Long> getFilmIdBasedOnReviewDateAfter(LocalDate date) {
+    public List<Long> getFilmIdsBasedOnReviewDateAfter(LocalDate date) {
         return reviewRepository.findFilmIdBasedOnReviewCreationDateAfter(date);
     }
 
-    public List<Long> getFilmIdBasedOnReviewDateBefore(LocalDate date) {
+    public List<Long> getFilmIdsBasedOnReviewDateBefore(LocalDate date) {
         return reviewRepository.findFilmIdBasedOnReviewCreationDateBefore(date);
     }
 

@@ -32,6 +32,10 @@ public class ActivityOnFilmService {
         return null;
     }
 
+    public List<ActivityOnFilm> getActivityByUserIdAndByRatingGreaterThan(Long userId, Double rating) {
+        return activityRepository.findActivityByUserIdAndByRatingGreaterThan(userId, rating);
+    }
+
     //TODO get as likes
     public ActivityOnFilm getActivitiesForListLikes(List<Long> likedUsersIds) {
         return null;

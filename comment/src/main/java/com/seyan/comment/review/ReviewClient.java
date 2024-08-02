@@ -3,10 +3,8 @@ package com.seyan.comment.review;
 
 import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -16,4 +14,9 @@ import java.util.Optional;
 )
 public interface ReviewClient {
 
+    @PutMapping("/add-comment")
+    void addReviewComment(@RequestParam("reviewId") Long reviewId, @RequestParam("commentId") Long commentId);
+
+    @DeleteMapping("/delete-comment")
+    void deleteReviewComment(@RequestParam("reviewId") Long reviewId, @RequestParam("commentId") Long commentId);
 }

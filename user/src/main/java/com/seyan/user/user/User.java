@@ -1,6 +1,6 @@
 package com.seyan.user.user;
 
-import com.seyan.reviewmonolith.user.dto.Role;
+import com.seyan.user.dto.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

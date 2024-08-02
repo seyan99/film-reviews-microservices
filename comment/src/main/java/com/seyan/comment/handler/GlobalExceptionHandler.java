@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(CommentNotFoundException.class)
-    public ResponseEntity<ErrorObject> handleUserNotFoundException(CommentNotFoundException ex) {
+    public ResponseEntity<ErrorObject> handleCommentNotFoundException(CommentNotFoundException ex) {
         ErrorObject errorObject = ErrorObject.builder()
                 .status(HttpStatus.NOT_FOUND.value())
                 .message(ex.getMessage())

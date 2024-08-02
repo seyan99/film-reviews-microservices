@@ -1,10 +1,11 @@
 package com.seyan.film.profile;
 
-import com.seyan.reviewmonolith.profile.dto.ProfileCreationDTO;
-import com.seyan.reviewmonolith.profile.dto.ProfileMapper;
-import com.seyan.reviewmonolith.profile.dto.ProfileResponseDTO;
-import com.seyan.reviewmonolith.profile.dto.ProfileUpdateDTO;
-import com.seyan.reviewmonolith.responseWrapper.CustomResponseWrapper;
+import com.seyan.film.dto.profile.ProfileCreationDTO;
+import com.seyan.film.dto.profile.ProfileMapper;
+
+import com.seyan.film.dto.profile.ProfileResponseDTO;
+import com.seyan.film.dto.profile.ProfileUpdateDTO;
+import com.seyan.film.responsewrapper.CustomResponseWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

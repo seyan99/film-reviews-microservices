@@ -4,6 +4,8 @@ import com.seyan.comment.dto.CommentCreationDTO;
 import com.seyan.comment.dto.CommentMapper;
 import com.seyan.comment.dto.CommentUpdateDTO;
 import com.seyan.comment.exception.CommentNotFoundException;
+import com.seyan.comment.filmlist.FilmListClient;
+import com.seyan.comment.review.ReviewClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +19,8 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
 
-    private final ReviewService reviewService;
-    private final FilmListService filmListService;
+    private final ReviewClient reviewClient;
+    private final FilmListClient filmListClient;
 
     @Transactional //todo interservice transaction(?)
     public Comment createComment(CommentCreationDTO dto, PostType postType) {
@@ -28,9 +30,9 @@ public class CommentService {
         Comment saved = commentRepository.save(comment);
 
         if (postType == PostType.REVIEW) {
-            reviewService.addReviewComment(dto.postId(), saved.getId());
+            reviewClient.addReviewComment(dto.postId(), saved.getId());
         } else {
-            filmListService.addListComment(dto.postId(), saved.getId());
+            filmListClient.addListComment(dto.postId(), saved.getId());
         }
 
         return saved;
@@ -71,9 +73,9 @@ public class CommentService {
         commentRepository.deleteById(id);
 
         if (comment.getPostType() == PostType.REVIEW) {
-            reviewService.deleteReviewComment(comment.getPostId(), comment.getId());
+            reviewClient.deleteReviewComment(comment.getPostId(), comment.getId());
         } else {
-            filmListService.deleteListComment(comment.getPostId(), comment.getId());
+            filmListClient.deleteListComment(comment.getPostId(), comment.getId());
         }
     }
 }

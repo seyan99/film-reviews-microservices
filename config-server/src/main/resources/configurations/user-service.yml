@@ -3,7 +3,8 @@ server:
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/user-service
+#    url: jdbc:postgresql://localhost:5432/user-service
+    url: jdbc:postgresql://localhost:5432/review-monolith
     username: seyan99
     password: 1111
   jpa:
@@ -18,9 +19,3 @@ spring:
 #      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 #      properties:
 #        spring.json.type.mapping: orderConfirmation:com.alibou.ecommerce.kafka.OrderConfirmation
-
-application:
-  config:
-    customer-url: http://localhost:8222/api/v1/customers
-    payment-url: http://localhost:8222/api/v1/payments
-    product-url: http://localhost:8222/api/v1/products

@@ -1,16 +1,17 @@
 package com.seyan.film.film;
 
-import com.seyan.reviewmonolith.activity.ActivityOnFilm;
-import com.seyan.reviewmonolith.activity.ActivityOnFilmRepository;
-import com.seyan.reviewmonolith.exception.film.FilmNotFoundException;
-import com.seyan.reviewmonolith.exception.film.SortingParametersException;
-import com.seyan.reviewmonolith.exception.profile.ProfileNotFoundException;
-import com.seyan.reviewmonolith.film.dto.FilmCreationDTO;
-import com.seyan.reviewmonolith.film.dto.FilmMapper;
-import com.seyan.reviewmonolith.film.dto.FilmUpdateDTO;
-import com.seyan.reviewmonolith.profile.Profile;
-import com.seyan.reviewmonolith.profile.ProfileRepository;
-import com.seyan.reviewmonolith.review.ReviewService;
+import com.seyan.film.activity.ActivityClient;
+import com.seyan.film.activity.ActivityOnFilmResponseDTO;
+import com.seyan.film.review.ReviewClient;
+
+import com.seyan.film.exception.FilmNotFoundException;
+import com.seyan.film.exception.SortingParametersException;
+import com.seyan.film.exception.ProfileNotFoundException;
+import com.seyan.film.dto.film.FilmCreationDTO;
+import com.seyan.film.dto.film.FilmMapper;
+import com.seyan.film.dto.film.FilmUpdateDTO;
+import com.seyan.film.profile.Profile;
+import com.seyan.film.profile.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,10 +29,10 @@ public class FilmService {
     private final FilmRepository filmRepository;
     private final FilmMapper filmMapper;
     private final ProfileRepository profileRepository;
-    private final ActivityOnFilmRepository activityRepository;
+    private final ActivityClient activityClient;
 
     //todo replace review service with controller methods
-    private final ReviewService reviewService;
+    private final ReviewClient reviewClient;
 
 
 
@@ -292,8 +293,8 @@ public class FilmService {
     }
 
     private Stream<Film> filterFilmsByYourRating(Stream<Film> stream, String rating, Long userId) {
-        List<ActivityOnFilm> activityList = activityRepository.findActivityByUserIdAndByRatingGreaterThan(userId, 0.0);
-        Map<Long, Double> filmIdAndRatingList = activityList.stream().collect(Collectors.toMap(it -> it.getId().getFilmId(), ActivityOnFilm::getRating));
+        List<ActivityOnFilmResponseDTO> activityList = activityClient.getActivityByUserIdAndByRatingGreaterThan(userId, 0.0).getData();
+        Map<Long, Double> filmIdAndRatingList = activityList.stream().collect(Collectors.toMap(it -> it.id().getFilmId(), ActivityOnFilmResponseDTO::rating));
 
         //stream divided on two collections: with & without rating
         Map<Boolean, List<Film>> filmLists = stream
@@ -373,7 +374,7 @@ public class FilmService {
 
     //todo if review service not responding return all films
     private List<Film> getFilmsBasedOnReviewDateAfter(LocalDate date) {
-        List<Long> filmIdList = reviewService.getFilmIdBasedOnReviewDateAfter(date);
+        List<Long> filmIdList = reviewClient.getFilmIdsBasedOnReviewDateAfter(date).getData();
         List<Long> filmIdListSorted = filmIdList.stream().sorted(Comparator.comparing(it -> Collections.frequency(filmIdList, it)).reversed()).distinct().toList();
 
         List<Film> filmList = filmRepository.findAllById(filmIdListSorted);
@@ -383,7 +384,7 @@ public class FilmService {
     }
 
     private List<Film> getFilmsBasedOnIdRepetitiveness() {
-        List<Long> filmIdList = reviewService.getAllFilmIds();
+        List<Long> filmIdList = reviewClient.getAllFilmIds().getData();
         List<Long> filmIdListSorted = filmIdList.stream().sorted(Comparator.comparing(it -> Collections.frequency(filmIdList, it)).reversed()).distinct().toList();
 
         List<Film> filmList = filmRepository.findAllById(filmIdListSorted);

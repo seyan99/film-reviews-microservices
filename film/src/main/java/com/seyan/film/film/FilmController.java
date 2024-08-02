@@ -1,17 +1,13 @@
 package com.seyan.film.film;
 
-import com.seyan.reviewmonolith.film.dto.FilmCreationDTO;
-import com.seyan.reviewmonolith.film.dto.FilmMapper;
-import com.seyan.reviewmonolith.film.dto.FilmResponseDTO;
-import com.seyan.reviewmonolith.film.dto.FilmUpdateDTO;
-import com.seyan.reviewmonolith.responseWrapper.CustomResponseWrapper;
+import com.seyan.film.dto.film.*;
+import com.seyan.film.responsewrapper.CustomResponseWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.xml.crypto.Data;
 import java.util.List;
 import java.util.Map;
 
@@ -106,6 +102,18 @@ public class FilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
+    @GetMapping("/get-by-id-list")
+    public ResponseEntity<CustomResponseWrapper<List<FilmInFilmListResponseDTO>>> getFilmsByIdList(@RequestBody List<Long> filmIds) {
+        List<Film> films = filmService.getFilmsByIdList(filmIds);
+        List<FilmInFilmListResponseDTO> response = filmMapper.mapFilmToFilmInFilmListResponseDTO(films);
+        CustomResponseWrapper<List<FilmInFilmListResponseDTO>> wrapper = CustomResponseWrapper.<List<FilmInFilmListResponseDTO>>builder()
+                .status(HttpStatus.OK.value())
+                .message("Films by id list")
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
     @GetMapping("/{filmUrl}")
     public ResponseEntity<CustomResponseWrapper<FilmResponseDTO>> filmDetailsByUrl(@PathVariable(value = "filmUrl") String filmUrl) {
         Film film = filmService.getFilmByUrl(filmUrl);
@@ -192,5 +200,4 @@ public class FilmController {
 
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
-
 }

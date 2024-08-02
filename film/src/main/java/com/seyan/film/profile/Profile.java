@@ -1,6 +1,6 @@
 package com.seyan.film.profile;
 
-import com.seyan.reviewmonolith.film.Film;
+import com.seyan.film.film.Film;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
