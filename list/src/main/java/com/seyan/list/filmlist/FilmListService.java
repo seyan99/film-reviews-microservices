@@ -1,5 +1,7 @@
 package com.seyan.list.filmlist;
 
+import com.seyan.list.comment.CommentClient;
+import com.seyan.list.comment.CommentResponseDTO;
 import com.seyan.list.dto.FilmInFilmListResponseDTO;
 import com.seyan.list.dto.FilmListCreationDTO;
 import com.seyan.list.dto.FilmListMapper;
@@ -26,10 +28,12 @@ public class FilmListService {
     private final FilmListRepository filmListRepository;
     private final FilmListMapper filmListMapper;
     private final ListEntryRepository entryRepository;
-
-    //todo replace with controller calls
     private final FilmClient filmClient;
-    //private final CommentClient commentService;
+    private final CommentClient commentClient;
+
+    public List<CommentResponseDTO> getLatestComments(Long postId) {
+        return commentClient.getLatestByPost(postId, "LIST").getData();
+    }
 
     public FilmList addListComment(Long listId, Long commentId) {
         //todo controller methods

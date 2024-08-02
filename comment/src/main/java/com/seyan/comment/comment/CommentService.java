@@ -44,10 +44,11 @@ public class CommentService {
         ));
     }
 
+    //todo reversed on db level
     public List<Comment> getCommentsByPost(Long postId, PostType postType) {
         return commentRepository.findByPostIdAndPostType(postId, postType)
                 .stream()
-                .sorted(Comparator.comparing(Comment::getCommentDate))
+                .sorted(Comparator.comparing(Comment::getCommentDate).reversed())
                 .toList();
     }
 
@@ -77,5 +78,13 @@ public class CommentService {
         } else {
             filmListClient.deleteListComment(comment.getPostId(), comment.getId());
         }
+    }
+
+    public List<Comment> getLatestCommentsByPost(Long postId, PostType postType) {
+        return commentRepository.findByPostIdAndPostType(postId, postType)
+                .stream()
+                .sorted(Comparator.comparing(Comment::getCommentDate).reversed())
+                .limit(5)
+                .toList();
     }
 }

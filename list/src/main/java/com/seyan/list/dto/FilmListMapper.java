@@ -72,6 +72,7 @@ public class FilmListMapper {
                 filmList.getDescription(),
                 filmList.getPrivacy(),
                 filmList.getLikedUsersIds().size(),
+                Collections.emptyList(),
                 filmList.getCommentIds().size(),
                 Collections.emptyList(),
                 filmList.getFilmIds().size()

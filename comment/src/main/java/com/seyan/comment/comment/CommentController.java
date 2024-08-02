@@ -104,4 +104,16 @@ public class CommentController {
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
+
+    @GetMapping("/latest-by-post")
+    public ResponseEntity<CustomResponseWrapper<List<CommentResponseDTO>>> getLatestByPost(@RequestParam("postId") Long postId, @RequestParam("postType") String postType) {
+        List<Comment> allComments = commentService.getLatestCommentsByPost(postId, PostType.valueOf(postType));
+        List<CommentResponseDTO> response = commentMapper.mapCommentToCommentResponseDTO(allComments);
+        CustomResponseWrapper<List<CommentResponseDTO>> wrapper = CustomResponseWrapper.<List<CommentResponseDTO>>builder()
+                .status(HttpStatus.OK.value())
+                .message("List of comments by post")
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
 }

@@ -1,5 +1,6 @@
 package com.seyan.list.filmlist;
 
+import com.seyan.list.comment.CommentResponseDTO;
 import com.seyan.list.dto.*;
 import com.seyan.list.responsewrapper.CustomResponseWrapper;
 import com.seyan.list.entry.ListEntry;
@@ -137,6 +138,9 @@ public class FilmListController {
 
         FilmListResponseDTO response = filmListMapper.mapFilmListToFilmListResponseDTO(list);
         response.setFilms(films);
+
+        List<CommentResponseDTO> latestComments = filmListService.getLatestComments(listId);
+        response.setComments(latestComments);
 
         CustomResponseWrapper<FilmListResponseDTO> wrapper = CustomResponseWrapper.<FilmListResponseDTO>builder()
                 .status(HttpStatus.OK.value())

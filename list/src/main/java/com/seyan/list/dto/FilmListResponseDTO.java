@@ -1,5 +1,6 @@
 package com.seyan.list.dto;
 
+import com.seyan.list.comment.CommentResponseDTO;
 import com.seyan.list.filmlist.Privacy;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +16,8 @@ public class FilmListResponseDTO {
     String description;
     Privacy privacy;
     int likeCount;
+    List<CommentResponseDTO> comments;
     int commentCount;
     List<FilmInFilmListResponseDTO> films;
-    Integer filmsCount;
+    int filmsCount;
 }
