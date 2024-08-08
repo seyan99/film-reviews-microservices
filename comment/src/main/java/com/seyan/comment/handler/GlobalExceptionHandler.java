@@ -1,8 +1,6 @@
 package com.seyan.comment.handler;
 
 import com.seyan.comment.exception.CommentNotFoundException;
-import com.seyan.comment.responsewrapper.ValidationErrorWrapper;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -42,19 +40,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ValidationErrorWrapper> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorObject> handleValidationExceptions(MethodArgumentNotValidException ex) {
         List<String> exceptionMessages = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(FieldError::getDefaultMessage)
                 .toList();
 
-        ValidationErrorWrapper wrapper = ValidationErrorWrapper.builder()
+        ErrorObject errorObject = ErrorObject.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
-                .message("Some fields are invalid")
-                .errors(exceptionMessages)
+                .message(exceptionMessages.toString())
+                .date(getDateTime())
                 .build();
-
-        return new ResponseEntity<>(wrapper, new HttpHeaders(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
     }
 }

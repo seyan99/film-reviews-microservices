@@ -2,12 +2,13 @@ package com.seyan.list.film;
 
 
 import com.seyan.list.dto.FilmInFilmListResponseDTO;
-import com.seyan.list.responsewrapper.CustomResponseWrapper;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+import java.util.Map;
 
 @FeignClient(
         name = "film-service",
@@ -16,5 +17,5 @@ import java.util.List;
 public interface FilmClient {
 
     @GetMapping("/get-by-id-list")
-    public CustomResponseWrapper<List<FilmInFilmListResponseDTO>> getFilmsByIdList(@RequestBody List<Long> filmIds);
+    public ResponseEntity<Map<String, Object>> getFilmsByIdList(@RequestBody List<Long> filmIds);
 }
