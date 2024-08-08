@@ -150,11 +150,9 @@ public class FilmListService {
     }
 
     public List<FilmInFilmListResponseDTO> getFilmsFromList(List<Long> filmIds) {
-        Object data = filmClient.getFilmsByIdList(filmIds).getBody().get("data");
+        List<FilmInFilmListResponseDTO> films = filmClient.getFilmsByIdList(filmIds).getData();
 
-        if (films != null) {
-            films.sort(Comparator.comparing(it -> filmIds.indexOf(it.id())));
-        }
+        films.sort(Comparator.comparing(it -> filmIds.indexOf(it.id())));
 
         return films;
     }

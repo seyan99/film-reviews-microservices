@@ -1,4 +1,4 @@
-package com.seyan.review.responsewrapper;
+package com.seyan.comment.responsewrapper;
 
 import lombok.*;
 
