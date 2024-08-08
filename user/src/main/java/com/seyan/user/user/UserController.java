@@ -1,12 +1,10 @@
 package com.seyan.user.user;
 
-import com.seyan.user.dto.UserCreationDTO;
-import com.seyan.user.dto.UserMapper;
-import com.seyan.user.dto.UserResponseDTO;
-import com.seyan.user.dto.UserUpdateDTO;
+import com.seyan.user.dto.*;
 import com.seyan.user.responsewrapper.CustomResponseWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +17,6 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
-
-    public ResponseEntity<User> createUser() {
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
@@ -74,12 +67,47 @@ public class UserController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<CustomResponseWrapper<List<UserResponseDTO>>> getAll() {
-        List<User> allUsers = userService.getAllUsers();
-        List<UserResponseDTO> response = userMapper.mapUserToUserResponseDTO(allUsers);
-        CustomResponseWrapper<List<UserResponseDTO>> wrapper = CustomResponseWrapper.<List<UserResponseDTO>>builder()
+    public ResponseEntity<CustomResponseWrapper<PageableUserResponseDTO>> getAll(
+            @RequestParam(defaultValue = "0", required = false) int page,
+            @RequestParam(defaultValue = "10", required = false) int size) {
+
+        Page<User> allUsers = userService.getAllUsers(page, size);
+        PageableUserResponseDTO response = userMapper.mapUsersPageToPageableUserResponseDTO(allUsers);
+        CustomResponseWrapper<PageableUserResponseDTO> wrapper = CustomResponseWrapper.<PageableUserResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("List of all users")
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/following")
+    public ResponseEntity<CustomResponseWrapper<PageableUserResponseDTO>> getFollowingUsers(
+            @PathVariable("id") Long userId,
+            @RequestParam(defaultValue = "0", required = false) int page,
+            @RequestParam(defaultValue = "10", required = false) int size) {
+
+        Page<User> allUsers = userService.getFollowingUsers(userId, page, size);
+        PageableUserResponseDTO response = userMapper.mapUsersPageToPageableUserResponseDTO(allUsers);
+        CustomResponseWrapper<PageableUserResponseDTO> wrapper = CustomResponseWrapper.<PageableUserResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message(String.format("Followings of user with ID: %s", userId))
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/followers")
+    public ResponseEntity<CustomResponseWrapper<PageableUserResponseDTO>> getFollowersUsers(
+            @PathVariable("id") Long userId,
+            @RequestParam(defaultValue = "0", required = false) int page,
+            @RequestParam(defaultValue = "10", required = false) int size) {
+
+        Page<User> allUsers = userService.getFollowersUsers(userId, page, size);
+        PageableUserResponseDTO response = userMapper.mapUsersPageToPageableUserResponseDTO(allUsers);
+        CustomResponseWrapper<PageableUserResponseDTO> wrapper = CustomResponseWrapper.<PageableUserResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message(String.format("Followers of user with ID: %s", userId))
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);

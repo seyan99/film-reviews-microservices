@@ -6,12 +6,18 @@ import com.seyan.review.dto.ReviewMapper;
 import com.seyan.review.dto.ReviewUpdateDTO;
 import com.seyan.review.exception.ReviewNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
@@ -77,10 +83,22 @@ public class ReviewService {
                 .toList();
     }
 
+    public Page<Review> getReviewsByFilmId(Long filmId, int pageNo, int pageSize) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "creationDate");
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        return reviewRepository.findByFilmIdAndContentNotNull(filmId, pageable);
+    }
+
     public List<Review> getReviewsByUserId(Long userId) {
         return reviewRepository.findByUserIdAndContentNotNull(userId).stream()
                 .sorted(Comparator.comparing(Review::getCreationDate).reversed())
                 .toList();
+    }
+
+    public Page<Review> getReviewsByUserId(Long userId, int pageNo, int pageSize) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "creationDate");
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        return reviewRepository.findByUserIdAndContentNotNull(userId, pageable);
     }
 
     public List<Review> getReviewsByUserIdAndFilmId(Long userId, Long filmId) {
@@ -89,14 +107,28 @@ public class ReviewService {
                 .toList();
     }
 
+    public Page<Review> getReviewsByUserIdAndFilmId(Long userId, Long filmId, int pageNo, int pageSize) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "creationDate");
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        return reviewRepository.findByUserIdAndFilmIdAndContentNotNull(userId, filmId, pageable);
+    }
+
     public List<Review> getReviewsByUserIdAsDiary(Long userId) {
         return reviewRepository.findByUserIdAndWatchedOnDateNotNull(userId).stream()
                 .sorted(Comparator.comparing(Review::getCreationDate).reversed())
                 .toList();
     }
 
-    public List<Review> getAllReviews() {
-        return reviewRepository.findAll();
+    public Page<Review> getReviewsByUserIdAsDiary(Long userId, int pageNo, int pageSize) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "creationDate");
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        return reviewRepository.findByUserIdAndWatchedOnDateNotNull(userId, pageable);
+    }
+
+    public Page<Review> getAllReviews(int pageNo, int pageSize) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "creationDate");
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        return reviewRepository.findAll(pageable);
     }
 
     public Review updateReview(Long reviewId, ReviewUpdateDTO dto) {
@@ -132,5 +164,15 @@ public class ReviewService {
 
     public List<Long> getAllFilmIds() {
         return reviewRepository.findAllFilmIds();
+    }
+
+    public Map<String, List<Review>> getLatestAndPopularReviewsForFilm(Long filmId) {
+        //Sort sort = Sort.by("likedUsersIds").descending();
+        List<Review> latest = reviewRepository.findByFilmIdTop3ByOrderByCreationDateDesc(filmId);
+        List<Review> popular = reviewRepository.findByFilmIdTop3ByLikedUsersIdsDesc(filmId);
+        HashMap<String, List<Review>> reviews = new HashMap<>();
+        reviews.put("latest", latest);
+        reviews.put("popular", popular);
+        return reviews;
     }
 }

@@ -12,6 +12,9 @@ import com.seyan.film.profile.Profile;
 import com.seyan.film.profile.ProfileRepository;
 import com.seyan.film.review.ReviewClient;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -197,6 +200,21 @@ public class FilmService {
         String parsedTitle = builder.append(split[split.length - 1]).toString();
 
         return filmRepository.findByTitleContaining(parsedTitle);
+    }
+
+    public Page<Film> getAllFilmsByTitle(String title, int pageNo) {
+
+        String[] split = title.split("-");
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < split.length - 1; i++) {
+            builder.append(split[i]).append(" ");
+        }
+        String parsedTitle = builder.append(split[split.length - 1]).toString();
+
+        Pageable pageable = PageRequest.of(pageNo - 1, 20);
+
+        return filmRepository.findByTitleContaining(parsedTitle, pageable);
     }
 
     public Film getFilmByUrl(String filmUrl) {

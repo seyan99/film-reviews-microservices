@@ -4,6 +4,7 @@ import com.seyan.film.dto.film.*;
 import com.seyan.film.responsewrapper.CustomResponseWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -126,6 +127,7 @@ public class FilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
+    //todo fix endpoints + pagination
     @GetMapping
     public ResponseEntity<CustomResponseWrapper<List<FilmResponseDTO>>> getAllFilms(
             @RequestParam(required = false) Map<String, String> params, @RequestParam(required = false) Long userId) {
@@ -140,14 +142,17 @@ public class FilmController {
     }
 
     @GetMapping("/search/{title}")
-    public ResponseEntity<CustomResponseWrapper<List<FilmResponseDTO>>> getAllFilmsByTitle(@PathVariable String title) {
-        //todo parse title with blank spaces(?)
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!title = " + title);
-        List<Film> films = filmService.getAllFilmsByTitle(title);
-        List<FilmResponseDTO> response = filmMapper.mapFilmToFilmResponseDTO(films);
-        CustomResponseWrapper<List<FilmResponseDTO>> wrapper = CustomResponseWrapper.<List<FilmResponseDTO>>builder()
+    public ResponseEntity<CustomResponseWrapper<PageableFilmResponseDTO>> getFilmsByTitle(@PathVariable String title) {
+        return getFilmsByTitlePaginated(title, 1);
+    }
+
+    @GetMapping("/search/{title}/page/{pageNo}")
+    public ResponseEntity<CustomResponseWrapper<PageableFilmResponseDTO>> getFilmsByTitlePaginated(@PathVariable String title, @PathVariable("pageNo") int pageNo) {
+        Page<Film> films = filmService.getAllFilmsByTitle(title, pageNo);
+        PageableFilmResponseDTO response = filmMapper.mapFilmsPageToPageableFilmResponseDTO(films);
+        CustomResponseWrapper<PageableFilmResponseDTO> wrapper = CustomResponseWrapper.<PageableFilmResponseDTO>builder()
                 .status(HttpStatus.OK.value())
-                .message("List of all films by title")
+                .message("List of films by title")
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);

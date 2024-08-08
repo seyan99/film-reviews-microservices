@@ -6,6 +6,7 @@ import com.seyan.film.profile.Profile;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.beans.PropertyDescriptor;
@@ -15,6 +16,18 @@ import java.util.Set;
 
 @Component
 public class ProfileMapper {
+    public PageableProfileResponseDTO mapProfilesPageToPageableProfileResponseDTO(Page<Profile> comments) {
+        List<ProfileResponseDTO> mapped = mapProfileToProfileResponseDTO(comments.getContent());
+
+        return PageableProfileResponseDTO.builder()
+                .content(mapped)
+                .pageNo(comments.getNumber())
+                .pageSize(comments.getSize())
+                .totalPages(comments.getTotalPages())
+                .last(comments.isLast())
+                .build();
+    }
+
     public Profile mapPofileCreationDTOToProfile(ProfileCreationDTO dto) {
         return Profile.builder()
                 .name(dto.name())

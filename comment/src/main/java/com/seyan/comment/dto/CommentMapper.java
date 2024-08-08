@@ -5,6 +5,7 @@ import com.seyan.comment.comment.Comment;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.beans.PropertyDescriptor;
@@ -14,6 +15,18 @@ import java.util.Set;
 
 @Component
 public class CommentMapper {
+    public PageableCommentResponseDTO mapCommentsPageToPageableCommentResponseDTO(Page<Comment> comments) {
+        List<CommentResponseDTO> mapped = mapCommentToCommentResponseDTO(comments.getContent());
+
+        return PageableCommentResponseDTO.builder()
+                .content(mapped)
+                .pageNo(comments.getNumber())
+                .pageSize(comments.getSize())
+                .totalPages(comments.getTotalPages())
+                .last(comments.isLast())
+                .build();
+    }
+
     public Comment mapCommentCreationDTOToComment(CommentCreationDTO dto) {
         Comment comment = new Comment();
         BeanUtils.copyProperties(dto, comment, getNullFieldNames(dto));

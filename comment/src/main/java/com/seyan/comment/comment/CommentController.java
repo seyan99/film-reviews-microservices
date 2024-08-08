@@ -1,12 +1,10 @@
 package com.seyan.comment.comment;
 
-import com.seyan.comment.dto.CommentCreationDTO;
-import com.seyan.comment.dto.CommentMapper;
-import com.seyan.comment.dto.CommentResponseDTO;
-import com.seyan.comment.dto.CommentUpdateDTO;
+import com.seyan.comment.dto.*;
 import com.seyan.comment.responsewrapper.CustomResponseWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -82,10 +80,13 @@ public class CommentController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<CustomResponseWrapper<List<CommentResponseDTO>>> getAll() {
-        List<Comment> allComments = commentService.getAllComments();
-        List<CommentResponseDTO> response = commentMapper.mapCommentToCommentResponseDTO(allComments);
-        CustomResponseWrapper<List<CommentResponseDTO>> wrapper = CustomResponseWrapper.<List<CommentResponseDTO>>builder()
+    public ResponseEntity<CustomResponseWrapper<PageableCommentResponseDTO>> getAll(
+            @RequestParam(defaultValue = "0", required = false) int page,
+            @RequestParam(defaultValue = "10", required = false) int size) {
+
+        Page<Comment> allComments = commentService.getAllComments(page, size);
+        PageableCommentResponseDTO response = commentMapper.mapCommentsPageToPageableCommentResponseDTO(allComments);
+        CustomResponseWrapper<PageableCommentResponseDTO> wrapper = CustomResponseWrapper.<PageableCommentResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("List of all comments")
                 .data(response)
@@ -94,10 +95,14 @@ public class CommentController {
     }
 
     @GetMapping("/all-by-post")
-    public ResponseEntity<CustomResponseWrapper<List<CommentResponseDTO>>> getAllByPost(@RequestParam("postId") Long postId, @RequestParam("postType") String postType) {
-        List<Comment> allComments = commentService.getCommentsByPost(postId, PostType.valueOf(postType));
-        List<CommentResponseDTO> response = commentMapper.mapCommentToCommentResponseDTO(allComments);
-        CustomResponseWrapper<List<CommentResponseDTO>> wrapper = CustomResponseWrapper.<List<CommentResponseDTO>>builder()
+    public ResponseEntity<CustomResponseWrapper<PageableCommentResponseDTO>> getAllByPost(
+            @RequestParam(defaultValue = "0", required = false) int page,
+            @RequestParam(defaultValue = "10", required = false) int size,
+            @RequestParam("postId") Long postId, @RequestParam("postType") String postType) {
+
+        Page<Comment> allComments = commentService.getCommentsByPost(postId, PostType.valueOf(postType), page, size);
+        PageableCommentResponseDTO response = commentMapper.mapCommentsPageToPageableCommentResponseDTO(allComments);
+        CustomResponseWrapper<PageableCommentResponseDTO> wrapper = CustomResponseWrapper.<PageableCommentResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("List of comments by post")
                 .data(response)

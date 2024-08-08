@@ -6,6 +6,10 @@ import com.seyan.user.dto.UserMapper;
 import com.seyan.user.dto.UserUpdateDTO;
 import com.seyan.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,6 +41,11 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public Page<User> getAllUsers(int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return userRepository.findAll(pageable);
+    }
+
     public List<User> getFollowingUsers(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(
                 String.format("No user found with the provided ID: %s", id)
@@ -45,12 +54,30 @@ public class UserService {
         return userRepository.findAllById(user.followingUsers);
     }
 
+    public Page<User> getFollowingUsers(Long id, int pageNo, int pageSize) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(
+                String.format("No user found with the provided ID: %s", id)
+        ));
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return userRepository.findAllById(user.followingUsers, pageable);
+    }
+
     public List<User> getFollowersUsers(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(
                 String.format("No user found with the provided ID: %s", id)
         ));
 
         return userRepository.findAllById(user.followersUsers);
+    }
+
+    public Page<User> getFollowersUsers(Long id, int pageNo, int pageSize) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(
+                String.format("No user found with the provided ID: %s", id)
+        ));
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return userRepository.findAllById(user.followersUsers, pageable);
     }
 
     public User updateUser(UserUpdateDTO dto, Long id) {

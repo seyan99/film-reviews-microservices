@@ -1,12 +1,10 @@
 package com.seyan.film.profile;
 
-import com.seyan.film.dto.profile.ProfileCreationDTO;
-import com.seyan.film.dto.profile.ProfileMapper;
-import com.seyan.film.dto.profile.ProfileResponseDTO;
-import com.seyan.film.dto.profile.ProfileUpdateDTO;
+import com.seyan.film.dto.profile.*;
 import com.seyan.film.responsewrapper.CustomResponseWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -97,12 +95,17 @@ public class ProfileController {
     }
 
     @GetMapping
-    public ResponseEntity<CustomResponseWrapper<List<ProfileResponseDTO>>> getAllProfiles() {
+    public ResponseEntity<CustomResponseWrapper<PageableProfileResponseDTO>> getAllProfiles() {
+        return getAllProfilesPaginated(1);
+    }
 
-        List<Profile> allProfiles = profileService.getAllProfiles();
-        List<ProfileResponseDTO> response = profileMapper.mapProfileToProfileResponseDTO(allProfiles);
+    @GetMapping("/page/{pageNo}")
+    public ResponseEntity<CustomResponseWrapper<PageableProfileResponseDTO>> getAllProfilesPaginated(@PathVariable("pageNo") int pageNo) {
 
-        CustomResponseWrapper<List<ProfileResponseDTO>> wrapper = CustomResponseWrapper.<List<ProfileResponseDTO>>builder()
+        Page<Profile> allProfiles = profileService.getAllProfiles(pageNo);
+        PageableProfileResponseDTO response = profileMapper.mapProfilesPageToPageableProfileResponseDTO(allProfiles);
+
+        CustomResponseWrapper<PageableProfileResponseDTO> wrapper = CustomResponseWrapper.<PageableProfileResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("List of all profiles")
                 .data(response)

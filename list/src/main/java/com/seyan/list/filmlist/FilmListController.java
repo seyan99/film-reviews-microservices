@@ -6,6 +6,7 @@ import com.seyan.list.entry.ListEntry;
 import com.seyan.list.responsewrapper.CustomResponseWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -142,12 +143,15 @@ public class FilmListController {
     }
 
     @GetMapping
-    public ResponseEntity<CustomResponseWrapper<List<FilmListResponseDTO>>> getAll() {
-        List<FilmList> allLists = filmListService.getAllFilmLists();
+    public ResponseEntity<CustomResponseWrapper<PageableFilmListResponseDTO>> getAll(
+            @RequestParam(defaultValue = "0", required = false) int page,
+            @RequestParam(defaultValue = "10", required = false) int size) {
 
-        List<FilmListResponseDTO> response = filmListMapper.mapFilmListToFilmListResponseDTO(allLists);
+        Page<FilmList> allLists = filmListService.getAllFilmLists(page, size);
 
-        CustomResponseWrapper<List<FilmListResponseDTO>> wrapper = CustomResponseWrapper.<List<FilmListResponseDTO>>builder()
+        PageableFilmListResponseDTO response = filmListMapper.mapFilmListsPageToPageableFilmsListResponseDTO(allLists);
+
+        CustomResponseWrapper<PageableFilmListResponseDTO> wrapper = CustomResponseWrapper.<PageableFilmListResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("All film list")
                 .data(response)
@@ -157,12 +161,16 @@ public class FilmListController {
     }
 
     @GetMapping("/by-user/{userId}")
-    public ResponseEntity<CustomResponseWrapper<List<FilmListResponseDTO>>> getAllByUserId(@PathVariable("userId") Long userId) {
-        List<FilmList> allLists = filmListService.getAllFilmListsByUserId(userId);
+    public ResponseEntity<CustomResponseWrapper<PageableFilmListResponseDTO>> getAllByUserId(
+            @PathVariable("userId") Long userId,
+            @RequestParam(defaultValue = "0", required = false) int page,
+            @RequestParam(defaultValue = "10", required = false) int size) {
 
-        List<FilmListResponseDTO> response = filmListMapper.mapFilmListToFilmListResponseDTO(allLists);
+        Page<FilmList> listsByUserId = filmListService.getAllFilmListsByUserId(userId, page, size);
 
-        CustomResponseWrapper<List<FilmListResponseDTO>> wrapper = CustomResponseWrapper.<List<FilmListResponseDTO>>builder()
+        PageableFilmListResponseDTO response = filmListMapper.mapFilmListsPageToPageableFilmsListResponseDTO(listsByUserId);
+
+        CustomResponseWrapper<PageableFilmListResponseDTO> wrapper = CustomResponseWrapper.<PageableFilmListResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("All film list")
                 .data(response)

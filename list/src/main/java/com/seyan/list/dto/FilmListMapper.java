@@ -7,6 +7,7 @@ import com.seyan.list.filmlist.FilmList;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.beans.PropertyDescriptor;
@@ -16,6 +17,18 @@ import java.util.stream.Collectors;
 
 @Component
 public class FilmListMapper {
+    public PageableFilmListResponseDTO mapFilmListsPageToPageableFilmsListResponseDTO(Page<FilmList> comments) {
+        List<FilmListResponseDTO> mapped = mapFilmListToFilmListResponseDTO(comments.getContent());
+
+        return PageableFilmListResponseDTO.builder()
+                .content(mapped)
+                .pageNo(comments.getNumber())
+                .pageSize(comments.getSize())
+                .totalPages(comments.getTotalPages())
+                .last(comments.isLast())
+                .build();
+    }
+
     public FilmList mapFilmListCreationDTOToFilmList(FilmListCreationDTO dto) {
         FilmList filmList = new FilmList();
         BeanUtils.copyProperties(dto, filmList, getNullFieldNames(dto));

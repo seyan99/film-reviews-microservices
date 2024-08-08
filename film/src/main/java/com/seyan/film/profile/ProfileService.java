@@ -8,6 +8,9 @@ import com.seyan.film.exception.ProfileNotFoundException;
 import com.seyan.film.film.Film;
 import com.seyan.film.film.FilmRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,6 +78,11 @@ public class ProfileService {
 
     public List<Profile> getAllProfiles() {
         return profileRepository.findAll();
+    }
+
+    public Page<Profile> getAllProfiles(int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo - 1, 20);
+        return profileRepository.findAll(pageable);
     }
 
     public Profile updateProfile(ProfileUpdateDTO dto, Long id) {
