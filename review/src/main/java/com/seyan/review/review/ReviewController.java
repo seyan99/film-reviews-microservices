@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reviews")
@@ -36,7 +37,9 @@ public class ReviewController {
     }
 
     @PutMapping("/add-comment")
-    public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> addReviewComment(@RequestParam("reviewId") Long reviewId, @RequestParam("commentId") Long commentId) {
+    public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> addReviewComment(
+            @RequestParam("reviewId") Long reviewId, @RequestParam("commentId") Long commentId) {
+
         Review review = reviewService.addReviewComment(reviewId, commentId);
         ReviewResponseDTO response = reviewMapper.mapReviewToReviewResponseDTO(review);
         CustomResponseWrapper<ReviewResponseDTO> wrapper = CustomResponseWrapper.<ReviewResponseDTO>builder()
@@ -48,7 +51,9 @@ public class ReviewController {
     }
 
     @PatchMapping("/delete-comment")
-    public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> deleteReviewComment(@RequestParam("reviewId") Long reviewId, @RequestParam("commentId") Long commentId) {
+    public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> deleteReviewComment(
+            @RequestParam("reviewId") Long reviewId, @RequestParam("commentId") Long commentId) {
+
         Review review = reviewService.deleteReviewComment(reviewId, commentId);
         ReviewResponseDTO response = reviewMapper.mapReviewToReviewResponseDTO(review);
         CustomResponseWrapper<ReviewResponseDTO> wrapper = CustomResponseWrapper.<ReviewResponseDTO>builder()
@@ -60,7 +65,9 @@ public class ReviewController {
     }
 
     @PatchMapping("/update-likes")
-    public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> updateReviewLikes(@RequestParam("reviewId") Long reviewId, @RequestParam("userId") Long userId) {
+    public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> updateReviewLikes(
+            @RequestParam("reviewId") Long reviewId, @RequestParam("userId") Long userId) {
+
         Review review = reviewService.updateReviewLikes(reviewId, userId);
         ReviewResponseDTO response = reviewMapper.mapReviewToReviewResponseDTO(review);
         CustomResponseWrapper<ReviewResponseDTO> wrapper = CustomResponseWrapper.<ReviewResponseDTO>builder()
@@ -72,7 +79,9 @@ public class ReviewController {
     }
 
     @PatchMapping("/{id}/update")
-    public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> updateReview(@PathVariable("id") Long reviewId, @RequestBody @Valid ReviewUpdateDTO dto) {
+    public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> updateReview(
+            @PathVariable("id") Long reviewId, @RequestBody @Valid ReviewUpdateDTO dto) {
+
         Review review = reviewService.updateReview(reviewId, dto);
         ReviewResponseDTO response = reviewMapper.mapReviewToReviewResponseDTO(review);
         CustomResponseWrapper<ReviewResponseDTO> wrapper = CustomResponseWrapper.<ReviewResponseDTO>builder()
@@ -85,6 +94,7 @@ public class ReviewController {
 
     @DeleteMapping("/{id}/delete")
     public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> deleteReview(@PathVariable("id") Long reviewId) {
+
         reviewService.deleteReview(reviewId);
         CustomResponseWrapper<ReviewResponseDTO> wrapper = CustomResponseWrapper.<ReviewResponseDTO>builder()
                 .status(HttpStatus.OK.value())
@@ -94,18 +104,7 @@ public class ReviewController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}/details")
-    public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> reviewDetails(@PathVariable("id") Long reviewId) {
-        Review review = reviewService.getReviewById(reviewId);
-        ReviewResponseDTO response = reviewMapper.mapReviewToReviewResponseDTO(review);
-        CustomResponseWrapper<ReviewResponseDTO> wrapper = CustomResponseWrapper.<ReviewResponseDTO>builder()
-                .status(HttpStatus.OK.value())
-                .message("Review details")
-                .data(response)
-                .build();
-        return new ResponseEntity<>(wrapper, HttpStatus.OK);
-    }
-
+    //todo rename method
     @GetMapping("/get-film-ids")
     public ResponseEntity<CustomResponseWrapper<List<Long>>> getAllFilmIds() {
         List<Long> response = reviewService.getAllFilmIds();
@@ -128,80 +127,154 @@ public class ReviewController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/by-film")
-    public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getAllReviewsByFilmId(
-            @RequestParam(defaultValue = "0", required = false) int page,
-            @RequestParam(defaultValue = "10", required = false) int size,
-            @RequestParam Long filmId) {
+    @GetMapping({"/film/{title}", "/{title}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getNewestReviews(
+            @PathVariable String title, @PathVariable Optional<Integer> pageNo) {
 
-        Page<Review> reviews = reviewService.getReviewsByFilmId(filmId, page, size);
+        Page<Review> reviews;
+        if (pageNo.isPresent()) {
+            reviews = reviewService.getNewestReviews(title, pageNo.get());
+        } else {
+            reviews = reviewService.getNewestReviews(title, 1);
+        }
+
         PageableReviewResponseDTO response = reviewMapper.mapReviewsPageToPageableReviewResponseDTO(reviews);
         CustomResponseWrapper<PageableReviewResponseDTO> wrapper = CustomResponseWrapper.<PageableReviewResponseDTO>builder()
                 .status(HttpStatus.OK.value())
-                .message(String.format("List of reviews for film with ID: %s", filmId))
+                .message(String.format("Newest reviews for film with title: %s", title))
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/{userId}/all")
-    public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getAllReviewsByUserId(
-            @RequestParam(defaultValue = "0", required = false) int page,
-            @RequestParam(defaultValue = "10", required = false) int size,
-            @PathVariable("userId") Long userId) {
+    @GetMapping({"/film/{title}/by/added-earliest", "/{title}/by/added-earliest/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getEarliestReviews(
+            @PathVariable String title, @PathVariable Optional<Integer> pageNo) {
 
-        Page<Review> reviews = reviewService.getReviewsByUserId(userId, page, size);
+        Page<Review> reviews;
+        if (pageNo.isPresent()) {
+            reviews = reviewService.getEarliestReviews(title, pageNo.get());
+        } else {
+            reviews = reviewService.getEarliestReviews(title, 1);
+        }
+
         PageableReviewResponseDTO response = reviewMapper.mapReviewsPageToPageableReviewResponseDTO(reviews);
         CustomResponseWrapper<PageableReviewResponseDTO> wrapper = CustomResponseWrapper.<PageableReviewResponseDTO>builder()
                 .status(HttpStatus.OK.value())
-                .message(String.format("List of reviews of user with ID: %s", userId))
+                .message(String.format("Earliest reviews for film with title: %s", title))
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/films")
-    public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getReviewsByUserIdAndFilmId(
-            @RequestParam(defaultValue = "0", required = false) int page,
-            @RequestParam(defaultValue = "10", required = false) int size,
-            @RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId) {
+    @GetMapping({"/film/{title}/by/popular", "/{title}/by/popular/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getPopularReviews(
+            @PathVariable String title, @PathVariable Optional<Integer> pageNo) {
 
-        Page<Review> reviews = reviewService.getReviewsByUserIdAndFilmId(userId, filmId, page, size);
+        Page<Review> reviews;
+        if (pageNo.isPresent()) {
+            reviews = reviewService.getPopularReviews(title, pageNo.get());
+        } else {
+            reviews = reviewService.getPopularReviews(title, 1);
+        }
+
         PageableReviewResponseDTO response = reviewMapper.mapReviewsPageToPageableReviewResponseDTO(reviews);
         CustomResponseWrapper<PageableReviewResponseDTO> wrapper = CustomResponseWrapper.<PageableReviewResponseDTO>builder()
                 .status(HttpStatus.OK.value())
-                .message(String.format("List of reviews for film with ID: %s of user with ID: %s", filmId, userId))
+                .message(String.format("Popular reviews for film with title: %s", title))
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/{userId}/films/diary")
+    @GetMapping({"/film/{title}/by/entry-rating", "/{title}/by/entry-rating/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getReviewsByHighestRating(
+            @PathVariable String title, @PathVariable Optional<Integer> pageNo) {
+
+        Page<Review> reviews;
+        if (pageNo.isPresent()) {
+            reviews = reviewService.getReviewsByHighestRating(title, pageNo.get());
+        } else {
+            reviews = reviewService.getReviewsByHighestRating(title, 1);
+        }
+
+        PageableReviewResponseDTO response = reviewMapper.mapReviewsPageToPageableReviewResponseDTO(reviews);
+        CustomResponseWrapper<PageableReviewResponseDTO> wrapper = CustomResponseWrapper.<PageableReviewResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message(String.format("Reviews with highest rating for film with title: %s", title))
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping({"/film/{title}/by/entry-rating-lowest", "/{title}/by/entry-rating-lowest/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getReviewsByLowestRating(
+            @PathVariable String title, @PathVariable Optional<Integer> pageNo) {
+
+        Page<Review> reviews;
+        if (pageNo.isPresent()) {
+            reviews = reviewService.getReviewsByLowestRating(title, pageNo.get());
+        } else {
+            reviews = reviewService.getReviewsByLowestRating(title, 1);
+        }
+
+        PageableReviewResponseDTO response = reviewMapper.mapReviewsPageToPageableReviewResponseDTO(reviews);
+        CustomResponseWrapper<PageableReviewResponseDTO> wrapper = CustomResponseWrapper.<PageableReviewResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message(String.format("Reviews with lowest rating for film with title: %s", title))
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping({"/user/{username}/", "/user/{username}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getAllReviewsByUsername(
+            @PathVariable String username, @PathVariable Optional<Integer> pageNo) {
+
+        Page<Review> reviews;
+        if (pageNo.isPresent()) {
+            reviews = reviewService.getReviewsByUsername(username, pageNo.get());
+        } else {
+            reviews = reviewService.getReviewsByUsername(username, 1);
+        }
+
+        PageableReviewResponseDTO response = reviewMapper.mapReviewsPageToPageableReviewResponseDTO(reviews);
+        CustomResponseWrapper<PageableReviewResponseDTO> wrapper = CustomResponseWrapper.<PageableReviewResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message(String.format("Reviews of user: %s", username))
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping({"/user/{username}/{title}", "/user/{username}/{title}/{reviewId}"})
+    public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> getReviewsByUsernameAndTitle(
+            @PathVariable String username,  @PathVariable String title, @PathVariable Optional<Long> reviewId) {
+
+        Review review = reviewService.getReviewByUsernameAndTitle(username, title, reviewId);
+        ReviewResponseDTO response = reviewMapper.mapReviewToReviewResponseDTO(review);
+        CustomResponseWrapper<ReviewResponseDTO> wrapper = CustomResponseWrapper.<ReviewResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message(String.format("Review for film with title: %s of user: %s", title, username))
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping({"/user/{username}/diary", "/user/{username}/diary/page/{pageNo}"})
     public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getDiary(
-            @RequestParam(defaultValue = "0", required = false) int page,
-            @RequestParam(defaultValue = "10", required = false) int size,
-            @PathVariable("userId") Long userId) {
+            @PathVariable String username, @PathVariable Optional<Integer> pageNo) {
 
-        Page<Review> reviews = reviewService.getReviewsByUserIdAsDiary(userId, page, size);
+        Page<Review> reviews;
+        if (pageNo.isPresent()) {
+            reviews = reviewService.getReviewsByUsernameAsDiary(username, pageNo.get());
+        } else {
+            reviews = reviewService.getReviewsByUsernameAsDiary(username, 1);
+        }
         PageableReviewResponseDTO response = reviewMapper.mapReviewsPageToPageableReviewResponseDTO(reviews);
         CustomResponseWrapper<PageableReviewResponseDTO> wrapper = CustomResponseWrapper.<PageableReviewResponseDTO>builder()
                 .status(HttpStatus.OK.value())
-                .message(String.format("Diary films of user with ID: %s", userId))
-                .data(response)
-                .build();
-        return new ResponseEntity<>(wrapper, HttpStatus.OK);
-    }
-
-    @GetMapping("/all")
-    public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getAllReviews(
-            @RequestParam(defaultValue = "0", required = false) int page,
-            @RequestParam(defaultValue = "10", required = false) int size) {
-
-        Page<Review> reviews = reviewService.getAllReviews(page, size);
-        PageableReviewResponseDTO response = reviewMapper.mapReviewsPageToPageableReviewResponseDTO(reviews);
-        CustomResponseWrapper<PageableReviewResponseDTO> wrapper = CustomResponseWrapper.<PageableReviewResponseDTO>builder()
-                .status(HttpStatus.OK.value())
-                .message("List of all reviews")
+                .message(String.format("Diary films of user: %s", username))
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);

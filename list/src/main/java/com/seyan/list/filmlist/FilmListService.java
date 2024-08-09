@@ -68,7 +68,6 @@ public class FilmListService {
         return filmListRepository.save(list);
     }
 
-
     @Transactional
     public FilmList createList(FilmListCreationDTO dto) {
         LocalDateTime creationDate = LocalDateTime.now();
@@ -138,18 +137,23 @@ public class FilmListService {
         return filmListRepository.findAll();
     }
 
-    public Page<FilmList> getAllFilmLists(int pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
+    public Page<FilmList> getAllFilmLists(int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo - 1, 10);
         return filmListRepository.findAll(pageable);
     }
 
-    public List<FilmList> getAllFilmListsByUserId(Long userId) {
+    public List<FilmList> getFilmListsByUserId(Long userId) {
         return filmListRepository.findByUserId(userId);
     }
 
-    public Page<FilmList> getAllFilmListsByUserId(Long userId, int pageNo, int pageSize) {
+    public Page<FilmList> getFilmListsByUserId(Long userId, int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         return filmListRepository.findByUserId(userId, pageable);
+    }
+
+    public Page<FilmList> getFilmListsByUsername(String username, int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo - 1, 10);
+        return filmListRepository.findByUsername(username, pageable);
     }
 
     @Transactional

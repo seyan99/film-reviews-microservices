@@ -36,4 +36,9 @@ public class User {
     List<Long> followingUsers;
 
     List<Long> followersUsers;
+
+    //todo activity in user response dto
+    //List<Long> lists
+    //likes
+    //watched
 }

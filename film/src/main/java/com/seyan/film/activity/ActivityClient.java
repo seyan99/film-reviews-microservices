@@ -3,6 +3,7 @@ package com.seyan.film.activity;
 
 import com.seyan.film.responsewrapper.CustomResponseWrapper;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -18,4 +19,7 @@ public interface ActivityClient {
     public CustomResponseWrapper<List<ActivityOnFilmResponseDTO>> getActivityByUserIdAndByRatingGreaterThan(
             @RequestParam("userId") Long userId,
             @RequestParam("rating") Double rating);
+
+    @GetMapping("/on-film")
+    CustomResponseWrapper<ActivityOnFilmResponseDTO> getFilmActivity(@RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId);
 }

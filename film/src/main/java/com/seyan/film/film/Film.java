@@ -52,6 +52,7 @@ public class Film {
     @Enumerated(EnumType.STRING)
     private Genre genre;
 
+    //todo rename to length
     private Integer runningTimeMinutes;
 
     private Long watchedCount;
@@ -59,6 +60,8 @@ public class Film {
     private Long listCount;
 
     private Long likeCount;
+
+    private Long reviewCount;
 
     public Film() {
         this.avgRating = 0.0;

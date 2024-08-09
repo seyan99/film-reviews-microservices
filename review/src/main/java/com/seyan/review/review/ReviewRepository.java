@@ -2,6 +2,7 @@ package com.seyan.review.review;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -35,6 +36,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     Page<Review> findByUserIdAndWatchedOnDateNotNull(Long userId, Pageable pageable);
 
+    Page<Review> findByUsernameAndWatchedOnDateNotNull(String username, Pageable pageable);
+
     List<Review> findByUserIdAndFilmIdAndContentNotNull(Long userId, Long filmId);
 
     Page<Review> findByUserIdAndFilmIdAndContentNotNull(Long userId, Long filmId, Pageable pageable);
@@ -44,6 +47,12 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findByFilmIdTop3ByOrderByCreationDateDesc(Long filmId);
 
     List<Review> findByFilmIdTop3ByLikedUsersIdsDesc(Long filmId);
+
+    Page<Review> findByFilmTitleAndContentNotNull(String title, Pageable pageable);
+
+    Page<Review> findByUsernameAndContentNotNull(String username, Pageable pageable);
+
+    List<Review> findByUsernameAndTitleAndContentNotNull(String username, String title, Sort sort);
 
     //List<Review> findTop3Latest(Long filmId);
 

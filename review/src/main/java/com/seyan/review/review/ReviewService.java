@@ -1,6 +1,6 @@
 package com.seyan.review.review;
 
-import com.seyan.review.activity.ActivityClient;
+import com.seyan.review.external.activity.ActivityClient;
 import com.seyan.review.dto.ReviewCreationDTO;
 import com.seyan.review.dto.ReviewMapper;
 import com.seyan.review.dto.ReviewUpdateDTO;
@@ -14,10 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -71,64 +68,11 @@ public class ReviewService {
         return saved;
     }
 
-    public Review getReviewById(Long id) {
-        return reviewRepository.findById(id).orElseThrow(() -> new ReviewNotFoundException(
-                String.format("No review found with the provided ID: %s", id)
-        ));
-    }
-
-    public List<Review> getReviewsByFilmId(Long filmId) {
-        return reviewRepository.findByFilmIdAndContentNotNull(filmId).stream()
-                .sorted(Comparator.comparing(Review::getCreationDate).reversed())
-                .toList();
-    }
-
-    public Page<Review> getReviewsByFilmId(Long filmId, int pageNo, int pageSize) {
+    //todo has your activity also if diary not yours
+    public Page<Review> getReviewsByUsernameAsDiary(String username, Integer pageNo) {
         Sort sort = Sort.by(Sort.Direction.DESC, "creationDate");
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        return reviewRepository.findByFilmIdAndContentNotNull(filmId, pageable);
-    }
-
-    public List<Review> getReviewsByUserId(Long userId) {
-        return reviewRepository.findByUserIdAndContentNotNull(userId).stream()
-                .sorted(Comparator.comparing(Review::getCreationDate).reversed())
-                .toList();
-    }
-
-    public Page<Review> getReviewsByUserId(Long userId, int pageNo, int pageSize) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "creationDate");
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        return reviewRepository.findByUserIdAndContentNotNull(userId, pageable);
-    }
-
-    public List<Review> getReviewsByUserIdAndFilmId(Long userId, Long filmId) {
-        return reviewRepository.findByUserIdAndFilmIdAndContentNotNull(userId, filmId).stream()
-                .sorted(Comparator.comparing(Review::getCreationDate).reversed())
-                .toList();
-    }
-
-    public Page<Review> getReviewsByUserIdAndFilmId(Long userId, Long filmId, int pageNo, int pageSize) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "creationDate");
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        return reviewRepository.findByUserIdAndFilmIdAndContentNotNull(userId, filmId, pageable);
-    }
-
-    public List<Review> getReviewsByUserIdAsDiary(Long userId) {
-        return reviewRepository.findByUserIdAndWatchedOnDateNotNull(userId).stream()
-                .sorted(Comparator.comparing(Review::getCreationDate).reversed())
-                .toList();
-    }
-
-    public Page<Review> getReviewsByUserIdAsDiary(Long userId, int pageNo, int pageSize) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "creationDate");
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        return reviewRepository.findByUserIdAndWatchedOnDateNotNull(userId, pageable);
-    }
-
-    public Page<Review> getAllReviews(int pageNo, int pageSize) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "creationDate");
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-        return reviewRepository.findAll(pageable);
+        Pageable pageable = PageRequest.of(pageNo - 1, 25, sort);
+        return reviewRepository.findByUsernameAndWatchedOnDateNotNull(username, pageable);
     }
 
     public Review updateReview(Long reviewId, ReviewUpdateDTO dto) {
@@ -159,8 +103,14 @@ public class ReviewService {
     }
 
     public List<Long> getFilmIdsBasedOnReviewDateAfter(LocalDate date) {
-        return reviewRepository.findFilmIdBasedOnReviewCreationDateAfter(date);
+        List<Long> idList = reviewRepository.findFilmIdBasedOnReviewCreationDateAfter(date);
+        List<Long> idListSorted = idList.stream().sorted(Comparator.comparing(it -> Collections.frequency(idList, it)).reversed()).distinct().toList();
+        return idListSorted;
     }
+
+    /*public List<Long> getFilmIdsBasedOnReviewDateAfter(LocalDate date) {
+        return reviewRepository.findFilmIdBasedOnReviewCreationDateAfter(date);
+    }*/
 
     public List<Long> getAllFilmIds() {
         return reviewRepository.findAllFilmIds();
@@ -174,5 +124,54 @@ public class ReviewService {
         reviews.put("latest", latest);
         reviews.put("popular", popular);
         return reviews;
+    }
+
+    public Page<Review> getNewestReviews(String title, Integer pageNo) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "creationDate");
+        Pageable pageable = PageRequest.of(pageNo - 1, 12, sort);
+        return reviewRepository.findByFilmTitleAndContentNotNull(title, pageable);
+    }
+
+    public Page<Review> getEarliestReviews(String title, Integer pageNo) {
+        Sort sort = Sort.by(Sort.Direction.ASC, "creationDate");
+        Pageable pageable = PageRequest.of(pageNo - 1, 12, sort);
+        return reviewRepository.findByFilmTitleAndContentNotNull(title, pageable);
+    }
+
+    public Page<Review> getPopularReviews(String title, Integer pageNo) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "likedUsersIds");
+        Pageable pageable = PageRequest.of(pageNo - 1, 12, sort);
+        return reviewRepository.findByFilmTitleAndContentNotNull(title, pageable);
+    }
+
+    public Page<Review> getReviewsByHighestRating(String title, Integer pageNo) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "rating");
+        Pageable pageable = PageRequest.of(pageNo - 1, 12, sort);
+        return reviewRepository.findByFilmTitleAndContentNotNull(title, pageable);
+    }
+
+    public Page<Review> getReviewsByLowestRating(String title, Integer pageNo) {
+        Sort sort = Sort.by(Sort.Direction.ASC, "rating");
+        Pageable pageable = PageRequest.of(pageNo - 1, 12, sort);
+        return reviewRepository.findByFilmTitleAndContentNotNull(title, pageable);
+    }
+
+    public Page<Review> getReviewsByUsername(String username, Integer pageNo) {
+        Sort sort = Sort.by(Sort.Direction.ASC, "creationDate");
+        Pageable pageable = PageRequest.of(pageNo - 1, 12, sort);
+        return reviewRepository.findByUsernameAndContentNotNull(username, pageable);
+    }
+
+    //returns by id or earliest available
+    public Review getReviewByUsernameAndTitle(String username, String title, Optional<Long> reviewId) {
+        if (reviewId.isPresent()) {
+            return reviewRepository.findById(reviewId.get()).orElseThrow(() -> new ReviewNotFoundException(
+                    String.format("No review found with the provided ID: %s", reviewId)
+            ));
+        } else {
+            Sort sort = Sort.by(Sort.Direction.ASC, "id");
+            List<Review> reviews = reviewRepository.findByUsernameAndTitleAndContentNotNull(username, title, sort);
+            return reviews.get(0);
+        }
     }
 }

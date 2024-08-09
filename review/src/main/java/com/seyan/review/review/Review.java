@@ -25,8 +25,14 @@ public class Review {
     private String content;
     private Boolean containsSpoilers;
     private LocalDate creationDate;
+
+    //todo leave one option
     private Long filmId;
+    private String title;
+
     private Long userId;
+    private String username;
+
     private Set<Long> likedUsersIds;
     private Set<Long> commentIds;
     private LocalDate watchedOnDate;

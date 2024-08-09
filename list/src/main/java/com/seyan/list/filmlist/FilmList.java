@@ -26,6 +26,9 @@ public class FilmList {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long userId;
+
+    private String username;
+
     private String title;
     private String description;
     @Enumerated(EnumType.STRING)

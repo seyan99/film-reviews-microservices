@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
@@ -32,7 +33,7 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/update")
-    public ResponseEntity<CustomResponseWrapper<UserResponseDTO>> updateUser(@RequestBody @Valid UserUpdateDTO dto, @PathVariable("id") Long id) {
+    public ResponseEntity<CustomResponseWrapper<UserResponseDTO>> updateUser(@RequestBody @Valid UserUpdateDTO dto, @PathVariable Long id) {
         User user = userService.updateUser(dto, id);
         UserResponseDTO response = userMapper.mapUserToUserResponseDTO(user);
         CustomResponseWrapper<UserResponseDTO> wrapper = CustomResponseWrapper.<UserResponseDTO>builder()
@@ -44,8 +45,8 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}/delete")
-    public ResponseEntity<CustomResponseWrapper<UserResponseDTO>> deleteUser(@PathVariable("id") Long userId) {
-        userService.deleteUser(userId);
+    public ResponseEntity<CustomResponseWrapper<UserResponseDTO>> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
         CustomResponseWrapper<UserResponseDTO> wrapper = CustomResponseWrapper.<UserResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("User has been deleted")
@@ -54,9 +55,9 @@ public class UserController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CustomResponseWrapper<UserResponseDTO>> userDetails(@PathVariable("id") Long userId) {
-        User user = userService.getUserById(userId);
+    @GetMapping("/{username}")
+    public ResponseEntity<CustomResponseWrapper<UserResponseDTO>> userDetails(@PathVariable String username) {
+        User user = userService.getUserByUsername(username);
         UserResponseDTO response = userMapper.mapUserToUserResponseDTO(user);
         CustomResponseWrapper<UserResponseDTO> wrapper = CustomResponseWrapper.<UserResponseDTO>builder()
                 .status(HttpStatus.OK.value())
@@ -66,12 +67,15 @@ public class UserController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<CustomResponseWrapper<PageableUserResponseDTO>> getAll(
-            @RequestParam(defaultValue = "0", required = false) int page,
-            @RequestParam(defaultValue = "10", required = false) int size) {
+    @GetMapping({"/", "/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableUserResponseDTO>> getAll(@PathVariable Optional<Integer> pageNo) {
+        Page<User> allUsers;
+        if (pageNo.isPresent()) {
+            allUsers = userService.getAllUsers(pageNo.get());
+        } else {
+            allUsers = userService.getAllUsers(1);
+        }
 
-        Page<User> allUsers = userService.getAllUsers(page, size);
         PageableUserResponseDTO response = userMapper.mapUsersPageToPageableUserResponseDTO(allUsers);
         CustomResponseWrapper<PageableUserResponseDTO> wrapper = CustomResponseWrapper.<PageableUserResponseDTO>builder()
                 .status(HttpStatus.OK.value())
@@ -81,33 +85,41 @@ public class UserController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}/following")
+    @GetMapping({"/{username}/following", "/{username}/following/page/{pageNo}"})
     public ResponseEntity<CustomResponseWrapper<PageableUserResponseDTO>> getFollowingUsers(
-            @PathVariable("id") Long userId,
-            @RequestParam(defaultValue = "0", required = false) int page,
-            @RequestParam(defaultValue = "10", required = false) int size) {
+            @PathVariable("id") String username, @PathVariable Optional<Integer> pageNo) {
 
-        Page<User> allUsers = userService.getFollowingUsers(userId, page, size);
+        Page<User> allUsers;
+        if (pageNo.isPresent()) {
+            allUsers = userService.getFollowingUsers(username, pageNo.get());
+        } else {
+            allUsers = userService.getFollowingUsers(username, 1);
+        }
+
         PageableUserResponseDTO response = userMapper.mapUsersPageToPageableUserResponseDTO(allUsers);
         CustomResponseWrapper<PageableUserResponseDTO> wrapper = CustomResponseWrapper.<PageableUserResponseDTO>builder()
                 .status(HttpStatus.OK.value())
-                .message(String.format("Followings of user with ID: %s", userId))
+                .message(String.format("Followings of user: %s", username))
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}/followers")
+    @GetMapping({"/{username}/followers", "/{username}/followers/page/{pageNo}"})
     public ResponseEntity<CustomResponseWrapper<PageableUserResponseDTO>> getFollowersUsers(
-            @PathVariable("id") Long userId,
-            @RequestParam(defaultValue = "0", required = false) int page,
-            @RequestParam(defaultValue = "10", required = false) int size) {
+            @PathVariable("id") String username, @PathVariable Optional<Integer> pageNo) {
 
-        Page<User> allUsers = userService.getFollowersUsers(userId, page, size);
+        Page<User> allUsers;
+        if (pageNo.isPresent()) {
+            allUsers = userService.getFollowersUsers(username, pageNo.get());
+        } else {
+            allUsers = userService.getFollowersUsers(username, 1);
+        }
+
         PageableUserResponseDTO response = userMapper.mapUsersPageToPageableUserResponseDTO(allUsers);
         CustomResponseWrapper<PageableUserResponseDTO> wrapper = CustomResponseWrapper.<PageableUserResponseDTO>builder()
                 .status(HttpStatus.OK.value())
-                .message(String.format("Followers of user with ID: %s", userId))
+                .message(String.format("Followers of user: %s", username))
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);

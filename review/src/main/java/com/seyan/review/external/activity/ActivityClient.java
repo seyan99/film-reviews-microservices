@@ -1,4 +1,4 @@
-package com.seyan.review.activity;
+package com.seyan.review.external.activity;
 
 
 import org.springframework.cloud.openfeign.FeignClient;

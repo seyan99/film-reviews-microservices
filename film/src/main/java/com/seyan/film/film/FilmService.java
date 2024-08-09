@@ -11,11 +11,15 @@ import com.seyan.film.exception.SortingParametersException;
 import com.seyan.film.profile.Profile;
 import com.seyan.film.profile.ProfileRepository;
 import com.seyan.film.review.ReviewClient;
+import com.seyan.film.review.ReviewResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -33,6 +37,17 @@ public class FilmService {
     private final ProfileRepository profileRepository;
     private final ActivityClient activityClient;
     private final ReviewClient reviewClient;
+    private final FilmSearchDao filmSearchDao;
+
+    //todo resilience
+    public Map<String, List<ReviewResponseDTO>> getLatestAndPopularReviewsForFilm(Long filmId) {
+        return reviewClient.latestAndPopularReviewsForFilm(filmId).getData();
+    }
+
+    //todo resilience
+    public ActivityOnFilmResponseDTO getFilmActivity(Long userId, Long filmId) {
+        return activityClient.getFilmActivity(userId, filmId).getData();
+    }
 
     public Film createFilm(FilmCreationDTO dto) {
         Film film = filmMapper.mapFilmCreationDTOToFilm(dto);
@@ -374,6 +389,7 @@ public class FilmService {
         }
     }
 
+    //todo sorting in reviev service
     private List<Film> getFilmsBasedOnReviewDateAfter(LocalDate date) {
         List<Long> filmIdList = reviewClient.getFilmIdsBasedOnReviewDateAfter(date).getData();
         List<Long> filmIdListSorted = filmIdList.stream().sorted(Comparator.comparing(it -> Collections.frequency(filmIdList, it)).reversed()).distinct().toList();
@@ -422,5 +438,10 @@ public class FilmService {
                         "Could not parse rating parameter, should be \"highest\" or \"lowest\"");
             }
         }
+    }
+
+    public Page<Film> getFilmsWithDecadeAndGenreAndSorting(String decade, String genre, String sorting, Integer pageNo) {
+        Pageable pageable = PageRequest.of(pageNo - 1, 25);
+        return filmSearchDao.findByDecadeAndGenreAndSorting(decade, genre, sorting, pageable);
     }
 }

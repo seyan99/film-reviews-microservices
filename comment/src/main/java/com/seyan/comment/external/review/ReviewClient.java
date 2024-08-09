@@ -1,4 +1,4 @@
-package com.seyan.comment.review;
+package com.seyan.comment.external.review;
 
 
 import jakarta.validation.Valid;

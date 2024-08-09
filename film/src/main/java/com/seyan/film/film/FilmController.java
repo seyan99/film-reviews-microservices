@@ -1,7 +1,9 @@
 package com.seyan.film.film;
 
+import com.seyan.film.activity.ActivityOnFilmResponseDTO;
 import com.seyan.film.dto.film.*;
 import com.seyan.film.responsewrapper.CustomResponseWrapper;
+import com.seyan.film.review.ReviewResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/films")
@@ -115,7 +118,7 @@ public class FilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/{filmUrl}")
+    /*@GetMapping("/{filmUrl}")
     public ResponseEntity<CustomResponseWrapper<FilmResponseDTO>> filmDetailsByUrl(@PathVariable(value = "filmUrl") String filmUrl) {
         Film film = filmService.getFilmByUrl(filmUrl);
         FilmResponseDTO response = filmMapper.mapFilmToFilmResponseDTO(film);
@@ -125,9 +128,26 @@ public class FilmController {
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }*/
+
+    //todo get user id from principal
+    @GetMapping("/{filmUrl}")
+    public ResponseEntity<CustomResponseWrapper<FilmPageViewResponseDTO>> filmDetailsByUrl(
+            @PathVariable(value = "filmUrl") String filmUrl, @RequestParam Long userId) {
+
+        Film film = filmService.getFilmByUrl(filmUrl);
+        FilmResponseDTO filmDTO = filmMapper.mapFilmToFilmResponseDTO(film);
+        ActivityOnFilmResponseDTO activity = filmService.getFilmActivity(userId, film.getId());
+        Map<String, List<ReviewResponseDTO>> reviews = filmService.getLatestAndPopularReviewsForFilm(film.getId());
+        CustomResponseWrapper<FilmPageViewResponseDTO> wrapper = CustomResponseWrapper.<FilmPageViewResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message("Film details")
+                .data(new FilmPageViewResponseDTO(filmDTO, activity, reviews))
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    //todo fix endpoints + pagination
+    //todo delete ?
     @GetMapping
     public ResponseEntity<CustomResponseWrapper<List<FilmResponseDTO>>> getAllFilms(
             @RequestParam(required = false) Map<String, String> params, @RequestParam(required = false) Long userId) {
@@ -141,14 +161,103 @@ public class FilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/search/{title}")
-    public ResponseEntity<CustomResponseWrapper<PageableFilmResponseDTO>> getFilmsByTitle(@PathVariable String title) {
-        return getFilmsByTitlePaginated(title, 1);
+    //todo replace userId with principal
+    @GetMapping({"/decade/{decade}/genre/{genre}/by/{sorting}", "/decade/{decade}/genre/{genre}/by/{sorting}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableFilmResponseDTO>> getFilmsWithDecadeAndGenreAndSorting(
+            @PathVariable String decade, @PathVariable String genre,
+            @PathVariable String sorting, @PathVariable Optional<Integer> pageNo,
+            @RequestParam(required = false) Long userId) {
+
+        Page<Film> films;
+        if (pageNo.isPresent()) {
+            films = filmService.getFilmsWithDecadeAndGenreAndSorting(decade, genre, sorting, pageNo.get());
+        } else {
+            films = filmService.getFilmsWithDecadeAndGenreAndSorting(decade, genre, sorting, 1);
+        }
+
+        PageableFilmResponseDTO response = filmMapper.mapFilmsPageToPageableFilmResponseDTO(films);
+        CustomResponseWrapper<PageableFilmResponseDTO> wrapper = CustomResponseWrapper.<PageableFilmResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message("Films by decade, genre and sorting")
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/search/{title}/page/{pageNo}")
-    public ResponseEntity<CustomResponseWrapper<PageableFilmResponseDTO>> getFilmsByTitlePaginated(@PathVariable String title, @PathVariable("pageNo") int pageNo) {
-        Page<Film> films = filmService.getAllFilmsByTitle(title, pageNo);
+    @GetMapping({"/decade/{decade}/by/{sorting}", "/decade/{decade}/by/{sorting}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableFilmResponseDTO>> getFilmsWithDecadeAndSorting(
+            @PathVariable String decade, @PathVariable String sorting,
+            @PathVariable Optional<Integer> pageNo, @RequestParam(required = false) Long userId) {
+
+        Page<Film> films;
+        if (pageNo.isPresent()) {
+            films = filmService.getFilmsWithDecadeAndGenreAndSorting(decade, null, sorting, pageNo.get());
+        } else {
+            films = filmService.getFilmsWithDecadeAndGenreAndSorting(decade, null, sorting, 1);
+        }
+
+        PageableFilmResponseDTO response = filmMapper.mapFilmsPageToPageableFilmResponseDTO(films);
+        CustomResponseWrapper<PageableFilmResponseDTO> wrapper = CustomResponseWrapper.<PageableFilmResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message("Films by genre and sorting")
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping({"/genre/{genre}/by/{sorting}", "/genre/{genre}/by/{sorting}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableFilmResponseDTO>> getFilmsWithGenreAndSorting(
+            @PathVariable String genre, @PathVariable String sorting,
+            @PathVariable Optional<Integer> pageNo, @RequestParam(required = false) Long userId) {
+
+        Page<Film> films;
+        if (pageNo.isPresent()) {
+            films = filmService.getFilmsWithDecadeAndGenreAndSorting(null, genre, sorting, pageNo.get());
+        } else {
+            films = filmService.getFilmsWithDecadeAndGenreAndSorting(null, genre, sorting, 1);
+        }
+
+        PageableFilmResponseDTO response = filmMapper.mapFilmsPageToPageableFilmResponseDTO(films);
+        CustomResponseWrapper<PageableFilmResponseDTO> wrapper = CustomResponseWrapper.<PageableFilmResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message("Films by genre and sorting")
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    //todo overload service method cuz null is not good
+    @GetMapping({"/by/{sorting}", "/by/{sorting}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableFilmResponseDTO>> getFilmsWithSorting(
+            @PathVariable String sorting, @PathVariable Optional<Integer> pageNo,
+            @RequestParam(required = false) Long userId) {
+
+        Page<Film> films;
+        if (pageNo.isPresent()) {
+            films = filmService.getFilmsWithDecadeAndGenreAndSorting(null, null, sorting, pageNo.get());
+        } else {
+            films = filmService.getFilmsWithDecadeAndGenreAndSorting(null, null, sorting, 1);
+        }
+
+        PageableFilmResponseDTO response = filmMapper.mapFilmsPageToPageableFilmResponseDTO(films);
+        CustomResponseWrapper<PageableFilmResponseDTO> wrapper = CustomResponseWrapper.<PageableFilmResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message("Films by sorting")
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping({"/search/{title}", "/search/{title}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableFilmResponseDTO>> getFilmsByTitlePaginated(
+            @PathVariable String title, @PathVariable("pageNo") Optional<Integer> pageNo) {
+
+        Page<Film> films;
+        if (pageNo.isPresent()) {
+            films = filmService.getAllFilmsByTitle(title, pageNo.get());
+        } else {
+            films = filmService.getAllFilmsByTitle(title, 1);
+        }
         PageableFilmResponseDTO response = filmMapper.mapFilmsPageToPageableFilmResponseDTO(films);
         CustomResponseWrapper<PageableFilmResponseDTO> wrapper = CustomResponseWrapper.<PageableFilmResponseDTO>builder()
                 .status(HttpStatus.OK.value())

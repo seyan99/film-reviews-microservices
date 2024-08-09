@@ -4,8 +4,8 @@ import com.seyan.comment.dto.CommentCreationDTO;
 import com.seyan.comment.dto.CommentMapper;
 import com.seyan.comment.dto.CommentUpdateDTO;
 import com.seyan.comment.exception.CommentNotFoundException;
-import com.seyan.comment.filmlist.FilmListClient;
-import com.seyan.comment.review.ReviewClient;
+import com.seyan.comment.external.filmlist.FilmListClient;
+import com.seyan.comment.external.review.ReviewClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -58,6 +58,12 @@ public class CommentService {
     public Page<Comment> getCommentsByPost(Long postId, PostType postType, int pageNo, int pageSize) {
         Sort sort = Sort.by(Sort.Direction.DESC, "commentDate");
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        return commentRepository.findByPostIdAndPostType(postId, postType, pageable);
+    }
+
+    public Page<Comment> getCommentsByPost(Long postId, PostType postType, int pageNo) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "commentDate");
+        Pageable pageable = PageRequest.of(pageNo - 1, 25, sort);
         return commentRepository.findByPostIdAndPostType(postId, postType, pageable);
     }
 

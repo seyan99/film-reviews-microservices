@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/lists")
@@ -142,12 +143,15 @@ public class FilmListController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping
-    public ResponseEntity<CustomResponseWrapper<PageableFilmListResponseDTO>> getAll(
-            @RequestParam(defaultValue = "0", required = false) int page,
-            @RequestParam(defaultValue = "10", required = false) int size) {
+    @GetMapping({"", "/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableFilmListResponseDTO>> getAll(@PathVariable Optional<Integer> pageNo) {
 
-        Page<FilmList> allLists = filmListService.getAllFilmLists(page, size);
+        Page<FilmList> allLists;
+        if (pageNo.isPresent()) {
+            allLists = filmListService.getAllFilmLists(pageNo.get());
+        } else {
+            allLists = filmListService.getAllFilmLists(1);
+        }
 
         PageableFilmListResponseDTO response = filmListMapper.mapFilmListsPageToPageableFilmsListResponseDTO(allLists);
 
@@ -160,19 +164,22 @@ public class FilmListController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/by-user/{userId}")
+    @GetMapping({"/user/{username}", "/user/{username}/page/{pageNo}"})
     public ResponseEntity<CustomResponseWrapper<PageableFilmListResponseDTO>> getAllByUserId(
-            @PathVariable("userId") Long userId,
-            @RequestParam(defaultValue = "0", required = false) int page,
-            @RequestParam(defaultValue = "10", required = false) int size) {
+            @PathVariable String username, @PathVariable Optional<Integer> pageNo) {
 
-        Page<FilmList> listsByUserId = filmListService.getAllFilmListsByUserId(userId, page, size);
+        Page<FilmList> filmLists;
+        if (pageNo.isPresent()) {
+            filmLists = filmListService.getFilmListsByUsername(username, pageNo.get());
+        } else {
+            filmLists = filmListService.getFilmListsByUsername(username, 1);
+        }
 
-        PageableFilmListResponseDTO response = filmListMapper.mapFilmListsPageToPageableFilmsListResponseDTO(listsByUserId);
+        PageableFilmListResponseDTO response = filmListMapper.mapFilmListsPageToPageableFilmsListResponseDTO(filmLists);
 
         CustomResponseWrapper<PageableFilmListResponseDTO> wrapper = CustomResponseWrapper.<PageableFilmListResponseDTO>builder()
                 .status(HttpStatus.OK.value())
-                .message("All film list")
+                .message(String.format("Film lists of user: %s", username))
                 .data(response)
                 .build();
 

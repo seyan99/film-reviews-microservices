@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/comments")
@@ -79,6 +80,7 @@ public class CommentController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
+    //todo delete
     @GetMapping("/all")
     public ResponseEntity<CustomResponseWrapper<PageableCommentResponseDTO>> getAll(
             @RequestParam(defaultValue = "0", required = false) int page,
@@ -94,24 +96,50 @@ public class CommentController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping("/all-by-post")
-    public ResponseEntity<CustomResponseWrapper<PageableCommentResponseDTO>> getAllByPost(
-            @RequestParam(defaultValue = "0", required = false) int page,
-            @RequestParam(defaultValue = "10", required = false) int size,
-            @RequestParam("postId") Long postId, @RequestParam("postType") String postType) {
+    @GetMapping({"/review/{reviewId}", "/review/{reviewId}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableCommentResponseDTO>> getAllByReview(
+            @PathVariable Long reviewId, @PathVariable Optional<Integer> pageNo) {
 
-        Page<Comment> allComments = commentService.getCommentsByPost(postId, PostType.valueOf(postType), page, size);
+        Page<Comment> allComments;
+        if (pageNo.isPresent()) {
+            allComments = commentService.getCommentsByPost(reviewId, PostType.REVIEW, pageNo.get());
+        } else {
+            allComments = commentService.getCommentsByPost(reviewId, PostType.REVIEW, 1);
+        }
+
         PageableCommentResponseDTO response = commentMapper.mapCommentsPageToPageableCommentResponseDTO(allComments);
         CustomResponseWrapper<PageableCommentResponseDTO> wrapper = CustomResponseWrapper.<PageableCommentResponseDTO>builder()
                 .status(HttpStatus.OK.value())
-                .message("List of comments by post")
+                .message(String.format("Comments for review with ID: %s", reviewId))
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping({"/list/{listId}", "/list/{listId}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableCommentResponseDTO>> getAllByList(
+            @PathVariable Long listId, @PathVariable Optional<Integer> pageNo) {
+
+        Page<Comment> allComments;
+        if (pageNo.isPresent()) {
+            allComments = commentService.getCommentsByPost(listId, PostType.LIST, pageNo.get());
+        } else {
+            allComments = commentService.getCommentsByPost(listId, PostType.LIST, 1);
+        }
+
+        PageableCommentResponseDTO response = commentMapper.mapCommentsPageToPageableCommentResponseDTO(allComments);
+        CustomResponseWrapper<PageableCommentResponseDTO> wrapper = CustomResponseWrapper.<PageableCommentResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message(String.format("Comments for list with ID: %s", listId))
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
     @GetMapping("/latest-by-post")
-    public ResponseEntity<CustomResponseWrapper<List<CommentResponseDTO>>> getLatestByPost(@RequestParam("postId") Long postId, @RequestParam("postType") String postType) {
+    public ResponseEntity<CustomResponseWrapper<List<CommentResponseDTO>>> getLatestByPost(
+            @RequestParam("postId") Long postId, @RequestParam("postType") String postType) {
+
         List<Comment> allComments = commentService.getLatestCommentsByPost(postId, PostType.valueOf(postType));
         List<CommentResponseDTO> response = commentMapper.mapCommentToCommentResponseDTO(allComments);
         CustomResponseWrapper<List<CommentResponseDTO>> wrapper = CustomResponseWrapper.<List<CommentResponseDTO>>builder()

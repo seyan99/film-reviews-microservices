@@ -41,8 +41,8 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public Page<User> getAllUsers(int pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
+    public Page<User> getAllUsers(int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo - 1, 25);
         return userRepository.findAll(pageable);
     }
 
@@ -54,12 +54,10 @@ public class UserService {
         return userRepository.findAllById(user.followingUsers);
     }
 
-    public Page<User> getFollowingUsers(Long id, int pageNo, int pageSize) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(
-                String.format("No user found with the provided ID: %s", id)
-        ));
+    public Page<User> getFollowingUsers(String username, int pageNo) {
+        User user = getUserByUsername(username);
 
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        Pageable pageable = PageRequest.of(pageNo - 1, 25);
         return userRepository.findAllById(user.followingUsers, pageable);
     }
 
@@ -69,6 +67,13 @@ public class UserService {
         ));
 
         return userRepository.findAllById(user.followersUsers);
+    }
+
+    public Page<User> getFollowersUsers(String username, int pageNo) {
+        User user = getUserByUsername(username);
+
+        Pageable pageable = PageRequest.of(pageNo - 1, 25);
+        return userRepository.findAllById(user.followersUsers, pageable);
     }
 
     public Page<User> getFollowersUsers(Long id, int pageNo, int pageSize) {
@@ -92,9 +97,5 @@ public class UserService {
         userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(
                 String.format("Cannot delete user:: No user found with the provided ID: %s", id)));
         userRepository.deleteById(id);
-    }
-
-    public PageableUserResponseDTO getAllUsersPageable(int pageNo, int pageSize) {
-        return null;
     }
 }

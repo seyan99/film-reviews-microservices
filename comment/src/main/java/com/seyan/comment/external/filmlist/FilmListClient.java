@@ -1,4 +1,4 @@
-package com.seyan.comment.filmlist;
+package com.seyan.comment.external.filmlist;
 
 
 import org.springframework.cloud.openfeign.FeignClient;
