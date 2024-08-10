@@ -119,7 +119,7 @@ public class ReviewService {
     public Map<String, List<Review>> getLatestAndPopularReviewsForFilm(Long filmId) {
         //Sort sort = Sort.by("likedUsersIds").descending();
         List<Review> latest = reviewRepository.findByFilmIdTop3ByOrderByCreationDateDesc(filmId);
-        List<Review> popular = reviewRepository.findByFilmIdTop3ByLikedUsersIdsDesc(filmId);
+        List<Review> popular = reviewRepository.findByFilmIdAndTop3ByLikedUsersIdsDesc(filmId);
         HashMap<String, List<Review>> reviews = new HashMap<>();
         reviews.put("latest", latest);
         reviews.put("popular", popular);
@@ -129,31 +129,31 @@ public class ReviewService {
     public Page<Review> getNewestReviews(String title, Integer pageNo) {
         Sort sort = Sort.by(Sort.Direction.DESC, "creationDate");
         Pageable pageable = PageRequest.of(pageNo - 1, 12, sort);
-        return reviewRepository.findByFilmTitleAndContentNotNull(title, pageable);
+        return reviewRepository.findByTitleAndContentNotNull(title, pageable);
     }
 
     public Page<Review> getEarliestReviews(String title, Integer pageNo) {
         Sort sort = Sort.by(Sort.Direction.ASC, "creationDate");
         Pageable pageable = PageRequest.of(pageNo - 1, 12, sort);
-        return reviewRepository.findByFilmTitleAndContentNotNull(title, pageable);
+        return reviewRepository.findByTitleAndContentNotNull(title, pageable);
     }
 
     public Page<Review> getPopularReviews(String title, Integer pageNo) {
         Sort sort = Sort.by(Sort.Direction.DESC, "likedUsersIds");
         Pageable pageable = PageRequest.of(pageNo - 1, 12, sort);
-        return reviewRepository.findByFilmTitleAndContentNotNull(title, pageable);
+        return reviewRepository.findByTitleAndContentNotNull(title, pageable);
     }
 
     public Page<Review> getReviewsByHighestRating(String title, Integer pageNo) {
         Sort sort = Sort.by(Sort.Direction.DESC, "rating");
         Pageable pageable = PageRequest.of(pageNo - 1, 12, sort);
-        return reviewRepository.findByFilmTitleAndContentNotNull(title, pageable);
+        return reviewRepository.findByTitleAndContentNotNull(title, pageable);
     }
 
     public Page<Review> getReviewsByLowestRating(String title, Integer pageNo) {
         Sort sort = Sort.by(Sort.Direction.ASC, "rating");
         Pageable pageable = PageRequest.of(pageNo - 1, 12, sort);
-        return reviewRepository.findByFilmTitleAndContentNotNull(title, pageable);
+        return reviewRepository.findByTitleAndContentNotNull(title, pageable);
     }
 
     public Page<Review> getReviewsByUsername(String username, Integer pageNo) {

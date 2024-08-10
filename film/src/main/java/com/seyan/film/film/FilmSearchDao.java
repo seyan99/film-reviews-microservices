@@ -1,7 +1,6 @@
 package com.seyan.film.film;
 
 import com.seyan.film.exception.SortingParametersException;
-import com.seyan.film.review.ReviewClient;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
@@ -13,8 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 @RequiredArgsConstructor

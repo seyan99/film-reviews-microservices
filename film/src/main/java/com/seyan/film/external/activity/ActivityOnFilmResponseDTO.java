@@ -1,4 +1,4 @@
-package com.seyan.film.activity;
+package com.seyan.film.external.activity;
 
 import java.time.LocalDate;
 

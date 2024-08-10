@@ -1,7 +1,7 @@
 package com.seyan.film.film;
 
-import com.seyan.film.activity.ActivityClient;
-import com.seyan.film.activity.ActivityOnFilmResponseDTO;
+import com.seyan.film.external.activity.ActivityClient;
+import com.seyan.film.external.activity.ActivityOnFilmResponseDTO;
 import com.seyan.film.dto.film.FilmCreationDTO;
 import com.seyan.film.dto.film.FilmMapper;
 import com.seyan.film.dto.film.FilmUpdateDTO;
@@ -10,16 +10,13 @@ import com.seyan.film.exception.ProfileNotFoundException;
 import com.seyan.film.exception.SortingParametersException;
 import com.seyan.film.profile.Profile;
 import com.seyan.film.profile.ProfileRepository;
-import com.seyan.film.review.ReviewClient;
-import com.seyan.film.review.ReviewResponseDTO;
+import com.seyan.film.external.review.ReviewClient;
+import com.seyan.film.external.review.ReviewResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -47,6 +44,11 @@ public class FilmService {
     //todo resilience
     public ActivityOnFilmResponseDTO getFilmActivity(Long userId, Long filmId) {
         return activityClient.getFilmActivity(userId, filmId).getData();
+    }
+
+    public Page<Film> getFilmsFromList(List<Long> filmIds, int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo - 1, 20);
+        return filmRepository.findAllByIdIn(filmIds, pageable);
     }
 
     public Film createFilm(FilmCreationDTO dto) {
@@ -389,7 +391,7 @@ public class FilmService {
         }
     }
 
-    //todo sorting in reviev service
+    //todo sorting in review service
     private List<Film> getFilmsBasedOnReviewDateAfter(LocalDate date) {
         List<Long> filmIdList = reviewClient.getFilmIdsBasedOnReviewDateAfter(date).getData();
         List<Long> filmIdListSorted = filmIdList.stream().sorted(Comparator.comparing(it -> Collections.frequency(filmIdList, it)).reversed()).distinct().toList();

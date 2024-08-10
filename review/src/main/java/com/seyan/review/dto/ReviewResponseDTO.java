@@ -1,6 +1,7 @@
 package com.seyan.review.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record ReviewResponseDTO(
         Long id,
@@ -9,7 +10,7 @@ public record ReviewResponseDTO(
         String content,
         LocalDate watchedOnDate,
         Boolean containsSpoilers,
-        LocalDate creationDate,
+        LocalDateTime creationDate,
         Long filmId,
         Long authorId,
         int reviewLikeCount,

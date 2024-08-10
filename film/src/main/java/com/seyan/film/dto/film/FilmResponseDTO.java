@@ -1,5 +1,6 @@
 package com.seyan.film.dto.film;
 
+import com.seyan.film.dto.profile.ProfilePreviewResponseDTO;
 import com.seyan.film.film.Genre;
 
 import java.time.LocalDate;
@@ -12,8 +13,8 @@ public record FilmResponseDTO(
         LocalDate releaseDate,
         String filmUrl,
         Double rating,
-        ProfileInFilmResponseDTO director,
-        List<ProfileInFilmResponseDTO> cast,
+        ProfilePreviewResponseDTO director,
+        List<ProfilePreviewResponseDTO> cast,
         Genre genre,
         Integer runningTimeMinutes,
         Long watchedCount,

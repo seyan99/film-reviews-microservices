@@ -19,4 +19,6 @@ public interface FilmRepository extends JpaRepository<Film, Long> {
     int countByTitleIgnoreCase(String title);
 
     Long findIdByTitle(String title);
+
+    Page<Film> findAllByIdIn(List<Long> filmIds, Pageable pageable);
 }

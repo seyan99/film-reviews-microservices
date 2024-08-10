@@ -127,7 +127,7 @@ public class ReviewController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping({"/film/{title}", "/{title}/page/{pageNo}"})
+    @GetMapping({"/film/{title}", "/film/{title}/page/{pageNo}"})
     public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getNewestReviews(
             @PathVariable String title, @PathVariable Optional<Integer> pageNo) {
 
@@ -147,7 +147,7 @@ public class ReviewController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping({"/film/{title}/by/added-earliest", "/{title}/by/added-earliest/page/{pageNo}"})
+    @GetMapping({"/film/{title}/by/added-earliest", "/film/{title}/by/added-earliest/page/{pageNo}"})
     public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getEarliestReviews(
             @PathVariable String title, @PathVariable Optional<Integer> pageNo) {
 
@@ -167,7 +167,7 @@ public class ReviewController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping({"/film/{title}/by/popular", "/{title}/by/popular/page/{pageNo}"})
+    @GetMapping({"/film/{title}/by/popular", "/film/{title}/by/popular/page/{pageNo}"})
     public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getPopularReviews(
             @PathVariable String title, @PathVariable Optional<Integer> pageNo) {
 
@@ -187,7 +187,7 @@ public class ReviewController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping({"/film/{title}/by/entry-rating", "/{title}/by/entry-rating/page/{pageNo}"})
+    @GetMapping({"/film/{title}/by/entry-rating", "/film/{title}/by/entry-rating/page/{pageNo}"})
     public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getReviewsByHighestRating(
             @PathVariable String title, @PathVariable Optional<Integer> pageNo) {
 
@@ -207,7 +207,7 @@ public class ReviewController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping({"/film/{title}/by/entry-rating-lowest", "/{title}/by/entry-rating-lowest/page/{pageNo}"})
+    @GetMapping({"/film/{title}/by/entry-rating-lowest", "/film/{title}/by/entry-rating-lowest/page/{pageNo}"})
     public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getReviewsByLowestRating(
             @PathVariable String title, @PathVariable Optional<Integer> pageNo) {
 

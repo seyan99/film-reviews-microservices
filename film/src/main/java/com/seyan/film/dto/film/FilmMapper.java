@@ -1,6 +1,7 @@
 package com.seyan.film.dto.film;
 
 
+import com.seyan.film.dto.profile.ProfilePreviewResponseDTO;
 import com.seyan.film.film.Film;
 import com.seyan.film.profile.Profile;
 import org.springframework.beans.BeanUtils;
@@ -16,6 +17,18 @@ import java.util.Set;
 
 @Component
 public class FilmMapper {
+    public PageableFilmPreviewResponseDTO mapFilmsPageToPageableFilmPreviewResponseDTO(Page<Film> films) {
+        List<FilmPreviewResponseDTO> mapped = mapFilmToFilmPreviewResponseDTO(films.getContent());
+
+        return PageableFilmPreviewResponseDTO.builder()
+                .content(mapped)
+                .pageNo(films.getNumber())
+                .pageSize(films.getSize())
+                .totalPages(films.getTotalPages())
+                .last(films.isLast())
+                .build();
+    }
+
     public PageableFilmResponseDTO mapFilmsPageToPageableFilmResponseDTO(Page<Film> comments) {
         List<FilmResponseDTO> mapped = mapFilmToFilmResponseDTO(comments.getContent());
 
@@ -34,19 +47,19 @@ public class FilmMapper {
         return film;
     }
 
-    public FilmInFilmListResponseDTO mapFilmToFilmInFilmListResponseDTO(Film film) {
+    public FilmPreviewResponseDTO mapFilmToFilmPreviewResponseDTO(Film film) {
         if (film == null) {
             return null;
         }
-        return new FilmInFilmListResponseDTO(film.getId(), film.getTitle(), film.getUrl());
+        return new FilmPreviewResponseDTO(film.getId(), film.getTitle(), film.getUrl());
     }
 
-    public List<FilmInFilmListResponseDTO> mapFilmToFilmInFilmListResponseDTO(List<Film> films) {
+    public List<FilmPreviewResponseDTO> mapFilmToFilmPreviewResponseDTO(List<Film> films) {
         if (films == null) {
             return null;
         }
         return films.stream()
-                .map(this::mapFilmToFilmInFilmListResponseDTO)
+                .map(this::mapFilmToFilmPreviewResponseDTO)
                 .toList();
     }
 
@@ -55,25 +68,25 @@ public class FilmMapper {
         return destination;
     }
 
-    private List<ProfileInFilmResponseDTO> mapProfileToProfileInFilmResponseDTO(Set<Profile> profiles) {
+    private List<ProfilePreviewResponseDTO> mapProfileToProfilePreviewResponseDTO(Set<Profile> profiles) {
         if (profiles == null) {
             return null;
         }
         return profiles.stream()
-                .map(this::mapProfileToProfileInFilmResponseDTO)
+                .map(this::mapProfileToProfilePreviewResponseDTO)
                 .toList();
     }
 
-    private ProfileInFilmResponseDTO mapProfileToProfileInFilmResponseDTO(Profile profile) {
+    private ProfilePreviewResponseDTO mapProfileToProfilePreviewResponseDTO(Profile profile) {
         if (profile == null) {
             return null;
         }
-        return new ProfileInFilmResponseDTO(profile.getId(), profile.getName(), profile.getUrl());
+        return new ProfilePreviewResponseDTO(profile.getId(), profile.getName(), profile.getUrl());
     }
 
     public FilmResponseDTO mapFilmToFilmResponseDTO(Film film) {
-        List<ProfileInFilmResponseDTO> cast = mapProfileToProfileInFilmResponseDTO(film.getCast());
-        ProfileInFilmResponseDTO director = mapProfileToProfileInFilmResponseDTO(film.getDirector());
+        List<ProfilePreviewResponseDTO> cast = mapProfileToProfilePreviewResponseDTO(film.getCast());
+        ProfilePreviewResponseDTO director = mapProfileToProfilePreviewResponseDTO(film.getDirector());
         return new FilmResponseDTO(
                 film.getId(),
                 film.getTitle(),

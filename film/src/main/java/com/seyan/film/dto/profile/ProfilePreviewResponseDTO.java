@@ -1,8 +1,8 @@
 package com.seyan.film.dto.profile;
 
-public record FilmInProfileResponseDTO(
+public record ProfilePreviewResponseDTO(
         Long id,
-        String title,
+        String name,
         String url
 ) {
 }

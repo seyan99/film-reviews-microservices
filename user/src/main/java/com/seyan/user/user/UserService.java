@@ -1,6 +1,5 @@
 package com.seyan.user.user;
 
-import com.seyan.user.dto.PageableUserResponseDTO;
 import com.seyan.user.dto.UserCreationDTO;
 import com.seyan.user.dto.UserMapper;
 import com.seyan.user.dto.UserUpdateDTO;
@@ -9,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -58,7 +56,7 @@ public class UserService {
         User user = getUserByUsername(username);
 
         Pageable pageable = PageRequest.of(pageNo - 1, 25);
-        return userRepository.findAllById(user.followingUsers, pageable);
+        return userRepository.findAllByIdIn(user.followingUsers, pageable);
     }
 
     public List<User> getFollowersUsers(Long id) {
@@ -73,7 +71,7 @@ public class UserService {
         User user = getUserByUsername(username);
 
         Pageable pageable = PageRequest.of(pageNo - 1, 25);
-        return userRepository.findAllById(user.followersUsers, pageable);
+        return userRepository.findAllByIdIn(user.followersUsers, pageable);
     }
 
     public Page<User> getFollowersUsers(Long id, int pageNo, int pageSize) {
@@ -82,7 +80,7 @@ public class UserService {
         ));
 
         Pageable pageable = PageRequest.of(pageNo, pageSize);
-        return userRepository.findAllById(user.followersUsers, pageable);
+        return userRepository.findAllByIdIn(user.followersUsers, pageable);
     }
 
     public User updateUser(UserUpdateDTO dto, Long id) {

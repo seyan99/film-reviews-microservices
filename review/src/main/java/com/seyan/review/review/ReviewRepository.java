@@ -44,11 +44,14 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     int countByUserIdAndFilmIdAndContentNotNull(Long userId, Long filmId);
 
-    List<Review> findByFilmIdTop3ByOrderByCreationDateDesc(Long filmId);
+    @Query(value = "select * from reviews where film_id = :filmId order by creation_date desc limit 3", nativeQuery = true)
+    List<Review> findByFilmIdTop3ByOrderByCreationDateDesc(@Param("filmId") Long filmId);
 
-    List<Review> findByFilmIdTop3ByLikedUsersIdsDesc(Long filmId);
+    //@Query(value = "select r from Review r where r.filmId = :filmId order by size(r.likedUsersIds) desc limit 3", nativeQuery = false)
+    @Query(value = "select * from reviews where film_id = :filmId order by pg_column_size(liked_users_ids) desc limit 3", nativeQuery = true)
+    List<Review> findByFilmIdAndTop3ByLikedUsersIdsDesc(@Param("filmId") Long filmId);
 
-    Page<Review> findByFilmTitleAndContentNotNull(String title, Pageable pageable);
+    Page<Review> findByTitleAndContentNotNull(String title, Pageable pageable);
 
     Page<Review> findByUsernameAndContentNotNull(String username, Pageable pageable);
 

@@ -7,6 +7,7 @@ import lombok.Data;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,7 +25,7 @@ public class Review {
     private Boolean isLiked;
     private String content;
     private Boolean containsSpoilers;
-    private LocalDate creationDate;
+    private LocalDateTime creationDate;
 
     //todo leave one option
     private Long filmId;
@@ -39,7 +40,7 @@ public class Review {
     private Boolean watchedThisFilmBefore;
 
     public Review() {
-        this.creationDate = LocalDate.now();
+        this.creationDate = LocalDateTime.now();
         this.likedUsersIds = new HashSet<>();
         this.commentIds = new HashSet<>();
     }

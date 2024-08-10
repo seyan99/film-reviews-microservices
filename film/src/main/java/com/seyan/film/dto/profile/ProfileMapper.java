@@ -1,6 +1,7 @@
 package com.seyan.film.dto.profile;
 
 
+import com.seyan.film.dto.film.FilmPreviewResponseDTO;
 import com.seyan.film.film.Film;
 import com.seyan.film.profile.Profile;
 import org.springframework.beans.BeanUtils;
@@ -41,8 +42,8 @@ public class ProfileMapper {
     }
 
     public ProfileResponseDTO mapProfileToProfileResponseDTO(Profile profile) {
-        List<FilmInProfileResponseDTO> starring = mapFilmToFilmInProfileResponseDTO(profile.getStarringFilms());
-        List<FilmInProfileResponseDTO> directed = mapFilmToFilmInProfileResponseDTO(profile.getDirectedFilms());
+        List<FilmPreviewResponseDTO> starring = mapFilmToFilmInProfileResponseDTO(profile.getStarringFilms());
+        List<FilmPreviewResponseDTO> directed = mapFilmToFilmInProfileResponseDTO(profile.getDirectedFilms());
         return new ProfileResponseDTO(
                 profile.getId(),
                 profile.getName(),
@@ -53,7 +54,7 @@ public class ProfileMapper {
         );
     }
 
-    private List<FilmInProfileResponseDTO> mapFilmToFilmInProfileResponseDTO(List<Film> films) {
+    private List<FilmPreviewResponseDTO> mapFilmToFilmInProfileResponseDTO(List<Film> films) {
         if (films == null) {
             return null;
         }
@@ -62,11 +63,11 @@ public class ProfileMapper {
                 .toList();
     }
 
-    private FilmInProfileResponseDTO mapFilmToFilmInProfileResponseDTO(Film film) {
+    private FilmPreviewResponseDTO mapFilmToFilmInProfileResponseDTO(Film film) {
         if (film == null) {
             return null;
         }
-        return new FilmInProfileResponseDTO(film.getId(), film.getTitle(), film.getUrl());
+        return new FilmPreviewResponseDTO(film.getId(), film.getTitle(), film.getUrl());
     }
 
     public List<ProfileResponseDTO> mapProfileToProfileResponseDTO(List<Profile> profiles) {

@@ -1,6 +1,6 @@
 package com.seyan.list.handler;
 
-import com.seyan.list.exception.FilmListNotFoundException;
+import com.seyan.list.exception.ListNotFoundException;
 import com.seyan.list.responsewrapper.ValidationErrorWrapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,8 +21,8 @@ public class GlobalExceptionHandler {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 
-    @ExceptionHandler(FilmListNotFoundException.class)
-    public ResponseEntity<ErrorObject> handleFilmListNotFoundException(FilmListNotFoundException ex) {
+    @ExceptionHandler(ListNotFoundException.class)
+    public ResponseEntity<ErrorObject> handleFilmListNotFoundException(ListNotFoundException ex) {
         ErrorObject errorObject = ErrorObject.builder()
                 .status(HttpStatus.NOT_FOUND.value())
                 .message(ex.getMessage())

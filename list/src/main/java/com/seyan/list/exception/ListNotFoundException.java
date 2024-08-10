@@ -2,11 +2,11 @@ package com.seyan.list.exception;
 
 import java.io.Serial;
 
-public class FilmListNotFoundException extends RuntimeException {
+public class ListNotFoundException extends RuntimeException {
     @Serial
     private static final long serialVersionUID = 1;
 
-    public FilmListNotFoundException(String message) {
+    public ListNotFoundException(String message) {
         super(message);
     }
 }

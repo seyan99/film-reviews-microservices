@@ -1,4 +1,4 @@
-package com.seyan.film.review;
+package com.seyan.film.external.review;
 
 import java.time.LocalDate;
 

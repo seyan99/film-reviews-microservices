@@ -1,9 +1,9 @@
 package com.seyan.film.film;
 
-import com.seyan.film.activity.ActivityOnFilmResponseDTO;
+import com.seyan.film.external.activity.ActivityOnFilmResponseDTO;
 import com.seyan.film.dto.film.*;
 import com.seyan.film.responsewrapper.CustomResponseWrapper;
-import com.seyan.film.review.ReviewResponseDTO;
+import com.seyan.film.external.review.ReviewResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -107,10 +107,10 @@ public class FilmController {
     }
 
     @GetMapping("/get-by-id-list")
-    public ResponseEntity<CustomResponseWrapper<List<FilmInFilmListResponseDTO>>> getFilmsByIdList(@RequestBody List<Long> filmIds) {
+    public ResponseEntity<CustomResponseWrapper<List<FilmPreviewResponseDTO>>> getFilmsByIdList(@RequestBody List<Long> filmIds) {
         List<Film> films = filmService.getFilmsByIdList(filmIds);
-        List<FilmInFilmListResponseDTO> response = filmMapper.mapFilmToFilmInFilmListResponseDTO(films);
-        CustomResponseWrapper<List<FilmInFilmListResponseDTO>> wrapper = CustomResponseWrapper.<List<FilmInFilmListResponseDTO>>builder()
+        List<FilmPreviewResponseDTO> response = filmMapper.mapFilmToFilmPreviewResponseDTO(films);
+        CustomResponseWrapper<List<FilmPreviewResponseDTO>> wrapper = CustomResponseWrapper.<List<FilmPreviewResponseDTO>>builder()
                 .status(HttpStatus.OK.value())
                 .message("Films by id list")
                 .data(response)
@@ -262,6 +262,25 @@ public class FilmController {
         CustomResponseWrapper<PageableFilmResponseDTO> wrapper = CustomResponseWrapper.<PageableFilmResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("List of films by title")
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping({"/from-list", "/from-list/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableFilmPreviewResponseDTO>> getFilmsFromList(
+            @PathVariable("pageNo") Optional<Integer> pageNo, @RequestBody List<Long> filmIds) {
+
+        Page<Film> films;
+        if (pageNo.isPresent()) {
+            films = filmService.getFilmsFromList(filmIds, pageNo.get());
+        } else {
+            films = filmService.getFilmsFromList(filmIds, 1);
+        }
+        PageableFilmPreviewResponseDTO response = filmMapper.mapFilmsPageToPageableFilmPreviewResponseDTO(films);
+        CustomResponseWrapper<PageableFilmPreviewResponseDTO> wrapper = CustomResponseWrapper.<PageableFilmPreviewResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message("Films preview")
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);

@@ -11,11 +11,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PageableFilmListResponseDTO {
+public class PageableListResponseDTO {
     private int pageNo;
     private int pageSize;
     private long totalElements;
     private int totalPages;
     private boolean last;
-    private List<FilmListResponseDTO> content;
+    private List<ListResponseDTO> content;
 }

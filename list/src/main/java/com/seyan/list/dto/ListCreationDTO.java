@@ -1,11 +1,11 @@
 package com.seyan.list.dto;
 
-import com.seyan.list.filmlist.Privacy;
+import com.seyan.list.list.Privacy;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
-public record FilmListCreationDTO(
+public record ListCreationDTO(
         @NotNull(message = "User id cannot be null")
         Long userId,
         @NotNull(message = "Please enter the list name")

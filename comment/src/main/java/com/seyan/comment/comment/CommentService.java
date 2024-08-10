@@ -42,6 +42,12 @@ public class CommentService {
         return saved;
     }
 
+    /*public Page<Comment> getCommentsFromList(List<Long> commentIds, int pageNo) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "commentDate");
+        Pageable pageable = PageRequest.of(pageNo - 1, 25, sort);
+        return commentRepository.findAllById(commentIds, pageable);
+    }
+*/
     public Comment getCommentById(Long id) {
         return commentRepository.findById(id).orElseThrow(() -> new CommentNotFoundException(
                 String.format("No Comment found with the provided ID: %s", id)

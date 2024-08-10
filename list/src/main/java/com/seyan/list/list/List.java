@@ -1,4 +1,4 @@
-package com.seyan.list.filmlist;
+package com.seyan.list.list;
 
 import com.seyan.list.entry.ListEntry;
 import jakarta.persistence.*;
@@ -11,7 +11,6 @@ import org.hibernate.annotations.DynamicUpdate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @ToString
@@ -21,7 +20,7 @@ import java.util.Set;
 @Entity
 @Table(name = "lists")
 @DynamicUpdate
-public class FilmList {
+public class List {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,16 +32,16 @@ public class FilmList {
     private String description;
     @Enumerated(EnumType.STRING)
     private Privacy privacy;
-    private Set<Long> likedUsersIds;
-    private Set<Long> commentIds;
+    private java.util.List<Long> likedUsersIds;
+    private java.util.List<Long> commentIds;
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "list_id", referencedColumnName = "id")
-    private List<ListEntry> filmIds = new ArrayList<>();
+    private java.util.List<ListEntry> filmIds = new ArrayList<>();
     private LocalDateTime creationDate;
     private LocalDateTime lastUpdateDate;
 
-    public FilmList() {
-        this.likedUsersIds = new HashSet<>();
-        this.commentIds = new HashSet<>();
+    public List() {
+        this.likedUsersIds = new ArrayList<>();
+        this.commentIds = new ArrayList<>();
     }
 }

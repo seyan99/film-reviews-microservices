@@ -1,4 +1,4 @@
-package com.seyan.list.filmlist;
+package com.seyan.list.list;
 
 public enum Privacy {
     PUBLIC("Public"),

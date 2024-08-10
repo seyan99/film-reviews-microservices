@@ -3,7 +3,7 @@ package com.seyan.list.dto;
 
 import com.seyan.list.entry.ListEntry;
 import com.seyan.list.entry.ListEntryId;
-import com.seyan.list.filmlist.FilmList;
+import com.seyan.list.list.List;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -16,11 +16,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class FilmListMapper {
-    public PageableFilmListResponseDTO mapFilmListsPageToPageableFilmsListResponseDTO(Page<FilmList> comments) {
-        List<FilmListResponseDTO> mapped = mapFilmListToFilmListResponseDTO(comments.getContent());
+public class ListMapper {
+    public PageableListResponseDTO mapListsPageToPageableListResponseDTO(Page<List> comments) {
+        java.util.List<ListResponseDTO> mapped = mapListToListResponseDTO(comments.getContent());
 
-        return PageableFilmListResponseDTO.builder()
+        return PageableListResponseDTO.builder()
                 .content(mapped)
                 .pageNo(comments.getNumber())
                 .pageSize(comments.getSize())
@@ -29,17 +29,17 @@ public class FilmListMapper {
                 .build();
     }
 
-    public FilmList mapFilmListCreationDTOToFilmList(FilmListCreationDTO dto) {
-        FilmList filmList = new FilmList();
-        BeanUtils.copyProperties(dto, filmList, getNullFieldNames(dto));
-        return filmList;
+    public List mapListCreationDTOToList(ListCreationDTO dto) {
+        List list = new List();
+        BeanUtils.copyProperties(dto, list, getNullFieldNames(dto));
+        return list;
     }
 
-    public Map<Integer, ListEntry> mapListEntriesToOrderedMap(List<ListEntry> entries) {
+    public Map<Integer, ListEntry> mapListEntriesToOrderedMap(java.util.List<ListEntry> entries) {
         return entries.stream().collect(Collectors.toMap(entries::indexOf, it -> it));
     }
 
-    public List<Long> mapListEntriesToFilmIds(List<ListEntry> filmEntries) {
+    public java.util.List<Long> mapListEntriesToFilmIds(java.util.List<ListEntry> filmEntries) {
         if (filmEntries == null) {
             return null;
         }
@@ -49,19 +49,19 @@ public class FilmListMapper {
                 .toList();
     }
 
-    public List<ListEntry> mapFilmIdsToListEntries(Long listId, List<Long> filmIds, LocalDateTime date) {
+    public java.util.List<ListEntry> mapFilmIdsToListEntries(Long listId, java.util.List<Long> filmIds, LocalDateTime date) {
         if (filmIds == null) {
             return null;
         }
 
-        List<ListEntryId> listEntryIds = mapFilmIdToListEntryId(listId, filmIds);
+        java.util.List<ListEntryId> listEntryIds = mapFilmIdToListEntryId(listId, filmIds);
 
         return listEntryIds.stream()
                 .map(it -> new ListEntry(it.getListId(), it.getFilmId(), null, date))
                 .toList();
     }
 
-    private List<ListEntryId> mapFilmIdToListEntryId(Long listId, List<Long> filmIds) {
+    private java.util.List<ListEntryId> mapFilmIdToListEntryId(Long listId, java.util.List<Long> filmIds) {
         if (filmIds == null) {
             return null;
         }
@@ -71,33 +71,34 @@ public class FilmListMapper {
                 .toList();
     }
 
-    public FilmList mapFlmListUpdateDTOToFilmList(FilmListUpdateDTO source, FilmList destination) {
+    public List mapListUpdateDTOToList(ListUpdateDTO source, List destination) {
         BeanUtils.copyProperties(source, destination, getNullFieldNames(source));
         return destination;
     }
 
-    public FilmListResponseDTO mapFilmListToFilmListResponseDTO(FilmList filmList) {
-        return new FilmListResponseDTO(
-                filmList.getId(),
-                filmList.getUserId(),
-                filmList.getTitle(),
-                filmList.getDescription(),
-                filmList.getPrivacy(),
-                filmList.getLikedUsersIds().size(),
-                Collections.emptyList(),
-                filmList.getCommentIds().size(),
-                Collections.emptyList(),
-                filmList.getFilmIds().size()
+    public ListResponseDTO mapListToListResponseDTO(List list) {
+        return new ListResponseDTO(
+                list.getId(),
+                list.getUserId(),
+                list.getUsername(),
+                list.getTitle(),
+                list.getDescription(),
+                list.getPrivacy(),
+                list.getLikedUsersIds().size(),
+                //Collections.emptyList(),
+                list.getCommentIds().size(),
+                //Collections.emptyList(),
+                list.getFilmIds().size()
         );
     }
 
-    public List<FilmListResponseDTO> mapFilmListToFilmListResponseDTO(List<FilmList> filmLists) {
-        if (filmLists == null) {
+    public java.util.List<ListResponseDTO> mapListToListResponseDTO(java.util.List<List> lists) {
+        if (lists == null) {
             return null;
         }
 
-        return filmLists.stream()
-                .map(this::mapFilmListToFilmListResponseDTO)
+        return lists.stream()
+                .map(this::mapListToListResponseDTO)
                 .toList();
     }
 

@@ -1,4 +1,4 @@
-package com.seyan.list.comment;
+package com.seyan.list.external.comment;
 
 import java.time.LocalDateTime;
 
