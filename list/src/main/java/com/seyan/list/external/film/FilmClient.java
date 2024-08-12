@@ -20,7 +20,6 @@ public interface FilmClient {
     @GetMapping("/get-by-id-list")
     public CustomResponseWrapper<List<FilmPreviewResponseDTO>> getFilmsByIdList(@RequestBody List<Long> filmIds);
 
-    @GetMapping("/from-list/page/{pageNo}")
-    public CustomResponseWrapper<PageableFilmPreviewResponseDTO> getFilmsFromList(
-            @PathVariable(required = false) int pageNo, @RequestBody List<Long> filmIds);
+    @GetMapping("/from-list")
+    public CustomResponseWrapper<List<FilmPreviewResponseDTO>> getFilmsFromList(@RequestBody List<Long> filmIds);
 }

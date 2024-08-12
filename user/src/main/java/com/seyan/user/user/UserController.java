@@ -67,7 +67,7 @@ public class UserController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping({"/", "/page/{pageNo}"})
+    @GetMapping({"", "/page/{pageNo}"})
     public ResponseEntity<CustomResponseWrapper<PageableUserResponseDTO>> getAll(@PathVariable Optional<Integer> pageNo) {
         Page<User> allUsers;
         if (pageNo.isPresent()) {

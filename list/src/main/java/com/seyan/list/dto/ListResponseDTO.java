@@ -4,6 +4,8 @@ import com.seyan.list.list.Privacy;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 public class ListResponseDTO {
@@ -18,4 +20,6 @@ public class ListResponseDTO {
     int commentCount;
     //List<FilmInFilmListResponseDTO> films;
     int filmsCount;
+    private LocalDateTime creationDate;
+    private LocalDateTime lastUpdateDate;
 }

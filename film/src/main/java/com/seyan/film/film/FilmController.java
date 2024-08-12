@@ -267,7 +267,7 @@ public class FilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping({"/from-list", "/from-list/page/{pageNo}"})
+    /*@GetMapping({"/from-list", "/from-list/page/{pageNo}"})
     public ResponseEntity<CustomResponseWrapper<PageableFilmPreviewResponseDTO>> getFilmsFromList(
             @PathVariable("pageNo") Optional<Integer> pageNo, @RequestBody List<Long> filmIds) {
 
@@ -279,6 +279,20 @@ public class FilmController {
         }
         PageableFilmPreviewResponseDTO response = filmMapper.mapFilmsPageToPageableFilmPreviewResponseDTO(films);
         CustomResponseWrapper<PageableFilmPreviewResponseDTO> wrapper = CustomResponseWrapper.<PageableFilmPreviewResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message("Films preview")
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }*/
+
+    @GetMapping("/from-list")
+    public ResponseEntity<CustomResponseWrapper<List<FilmPreviewResponseDTO>>> getFilmsFromList(@RequestBody List<Long> filmIds) {
+
+        List<Film> films = filmService.getFilmsFromList(filmIds);
+
+        List<FilmPreviewResponseDTO> response = filmMapper.mapFilmToFilmPreviewResponseDTO(films);
+        CustomResponseWrapper<List<FilmPreviewResponseDTO>> wrapper = CustomResponseWrapper.<List<FilmPreviewResponseDTO>>builder()
                 .status(HttpStatus.OK.value())
                 .message("Films preview")
                 .data(response)

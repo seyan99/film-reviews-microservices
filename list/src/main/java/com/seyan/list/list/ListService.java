@@ -1,5 +1,7 @@
 package com.seyan.list.list;
 
+import com.seyan.list.exception.ListParametersException;
+import com.seyan.list.exception.SortingParametersException;
 import com.seyan.list.external.comment.CommentClient;
 import com.seyan.list.external.comment.CommentResponseDTO;
 import com.seyan.list.dto.*;
@@ -9,15 +11,17 @@ import com.seyan.list.exception.ListNotFoundException;
 import com.seyan.list.external.comment.PageableCommentResponseDTO;
 import com.seyan.list.external.film.FilmClient;
 import com.seyan.list.external.film.FilmPreviewResponseDTO;
-import com.seyan.list.external.film.PageableFilmPreviewResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,6 +35,7 @@ public class ListService {
     private final ListEntryRepository entryRepository;
     private final FilmClient filmClient;
     private final CommentClient commentClient;
+    private final ListSearchDao listSearchDao;
 
     public java.util.List<CommentResponseDTO> getLatestComments(Long postId) {
         return commentClient.getLatestByPost(postId, "LIST").getData();
@@ -69,14 +74,15 @@ public class ListService {
 
     @Transactional
     public List createList(ListCreationDTO dto) {
-        LocalDateTime creationDate = LocalDateTime.now();
+        if (listRepository.countByTitleAndUsername(dto.title(), dto.username()) > 0) {
+            throw new ListParametersException(
+                    String.format("List with the provided title \"%s\" and username \"%s\" already exists", dto.title(), dto.username()));
+        }
 
         List mapped = listMapper.mapListCreationDTOToList(dto);
-        mapped.setCreationDate(creationDate);
-        mapped.setLastUpdateDate(creationDate);
         List withId = listRepository.save(mapped);
 
-        java.util.List<ListEntry> entries = mapListUniqueEntries(withId.getId(), dto.filmIds(), creationDate);
+        java.util.List<ListEntry> entries = mapListUniqueEntries(withId.getId(), dto.filmIds(), dto.creationDate());
         java.util.List<ListEntry> entriesWithOrder = entries.stream().peek(it -> it.setEntryOrder((long) entries.indexOf(it))).toList();
 
         entryRepository.saveAll(entriesWithOrder);
@@ -90,7 +96,7 @@ public class ListService {
     }
 
     @Transactional
-    public List updateFilmList(ListUpdateDTO dto, Long id) {
+    public List updateList(ListUpdateDTO dto, Long id) {
         List list = listRepository.findById(id).orElseThrow(() -> new ListNotFoundException(
                 String.format("Cannot update film list:: No list found with the provided ID: %s", id)
         ));
@@ -126,50 +132,69 @@ public class ListService {
         return listRepository.save(mapped);
     }
 
-    public List getFilmListById(Long id) {
+    public List getListById(Long id) {
         return listRepository.findById(id).orElseThrow(() -> new ListNotFoundException(
                 String.format("No list found with the provided ID: %s", id)
         ));
     }
 
+    public Page<List> getAllLists(int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo - 1, 10);
+        return listRepository.findAll(pageable);
+    }
+
+    public Page<List> getAllListsWithSorting(String sorting, int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo - 1, 10);
+        return listSearchDao.findByUsernameAndSorting(null, sorting, pageable);
+    }
+
     public List getListByTitle(String title) {
+        String parsedTitle = parseTitle(title);
+        System.out.println("parsedTitle = " + parsedTitle);
+        return listRepository.findByTitleContaining(title).orElseThrow(() -> new ListNotFoundException(
+                String.format("No list found with the provided title: %s", parsedTitle)
+        ));
+    }
+
+    public Page<List> getListsByUsername(String username, String sorting, int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo - 1, 10);
+        return listSearchDao.findByUsernameAndSorting(username, sorting, pageable);
+        //return listRepository.findByUsername(username, pageable);
+    }
+
+    public List getListByTitleAndUsername(String title, String username) {
+        String parsedTitle = parseTitle(title);
+        return listRepository.findByTitleAndUsername(title, username).orElseThrow(() -> new ListNotFoundException(
+                String.format("No list found with the provided title: %s and username: %s", parsedTitle, username)));
+    }
+
+    private String parseTitle(String title) {
         String[] split = title.split("-");
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < split.length - 1; i++) {
             builder.append(split[i]).append(" ");
         }
-        String parsedTitle = builder.append(split[split.length - 1]).toString();
-        return listRepository.findByTitle(title).orElseThrow(() -> new ListNotFoundException(
-                String.format("No list found with the provided title: %s", parsedTitle)
-        ));
+
+        System.out.println("builder.append(split[split.length - 1]).toString() = " + "A" + builder.append(split[split.length - 1]) + "A");
+        return builder.toString();
     }
 
-    public java.util.List<List> getAllFilmLists() {
+    public java.util.List<List> getAllLists() {
         return listRepository.findAll();
     }
 
-    public Page<List> getAllFilmLists(int pageNo) {
-        Pageable pageable = PageRequest.of(pageNo - 1, 10);
-        return listRepository.findAll(pageable);
-    }
-
-    public java.util.List<List> getFilmListsByUserId(Long userId) {
+    public java.util.List<List> getListsByUserId(Long userId) {
         return listRepository.findByUserId(userId);
     }
 
-    public Page<List> getFilmListsByUserId(Long userId, int pageNo, int pageSize) {
+    public Page<List> getListsByUserId(Long userId, int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         return listRepository.findByUserId(userId, pageable);
     }
 
-    public Page<List> getFilmListsByUsername(String username, int pageNo) {
-        Pageable pageable = PageRequest.of(pageNo - 1, 10);
-        return listRepository.findByUsername(username, pageable);
-    }
-
     @Transactional
-    public void deleteFilmList(Long id) {
+    public void deleteList(Long id) {
         listRepository.findById(id).orElseThrow(() -> new ListNotFoundException(
                 String.format("Cannot delete film list:: No list found with the provided ID: %s", id)
         ));
@@ -186,9 +211,48 @@ public class ListService {
         return films;
     }
 
-    public PageableFilmPreviewResponseDTO getFilmsFromList(java.util.List<ListEntry> entries, int pageNo) {
-        java.util.List<Long> filmIds = entries.stream().sorted(Comparator.comparing(ListEntry::getEntryOrder)).map(ListEntry::getFilmId).toList();
-        return filmClient.getFilmsFromList(pageNo, filmIds).getData();
+    public java.util.List<FilmPreviewResponseDTO> getFilmsFromList(java.util.List<ListEntry> entries, String filmsOrder, int pageNo) {
+        int pageStartElement = 0;
+        int pageEndElement;
+
+
+        if (entries.size() <= 5) {
+            pageEndElement = entries.size();
+        } else if (pageNo == 1) {
+            pageEndElement = 5;
+        } else if (pageNo > 1 && entries.size() > pageNo * 5) {
+            pageEndElement = pageNo * 5;
+            pageStartElement = pageNo * 5 - 5;
+        } else if (pageNo > 1 && entries.size() < pageNo * 5 && pageNo <= entries.size() / pageNo) {
+            pageStartElement = pageNo * 5 - 5;
+            pageEndElement = entries.size();
+        } else {
+            return Collections.emptyList();
+        }
+
+        java.util.List<Long> filmIds = sortEntriesToIds(entries, filmsOrder)
+                .subList(pageStartElement, pageEndElement);
+
+        return filmClient.getFilmsFromList(filmIds).getData();
+    }
+
+    private java.util.List<Long> sortEntriesToIds(java.util.List<ListEntry> entries, String sorting) {
+        switch (sorting) {
+            case "list-order" -> {
+                return entries.stream().sorted(Comparator.comparing(ListEntry::getEntryOrder)).map(ListEntry::getFilmId).toList();
+            }
+            case "reverse-order" -> {
+                return entries.stream().sorted(Comparator.comparing(ListEntry::getEntryOrder).reversed()).map(ListEntry::getFilmId).toList();
+            }
+            case "added-newest" -> {
+                return entries.stream().sorted(Comparator.comparing(ListEntry::getWhenAdded)).map(ListEntry::getFilmId).toList();
+            }
+            case "added-earliest" -> {
+                return entries.stream().sorted(Comparator.comparing(ListEntry::getWhenAdded).reversed()).map(ListEntry::getFilmId).toList();
+            }
+            default -> throw new SortingParametersException(
+                    "Could not parse sorting parameter");
+        }
     }
 
     public PageableCommentResponseDTO getCommentsFromList(Long listId, int pageNo) {

@@ -1,5 +1,6 @@
 package com.seyan.film.film;
 
+import com.seyan.film.dto.film.FilmPreviewResponseDTO;
 import com.seyan.film.external.activity.ActivityClient;
 import com.seyan.film.external.activity.ActivityOnFilmResponseDTO;
 import com.seyan.film.dto.film.FilmCreationDTO;
@@ -49,6 +50,12 @@ public class FilmService {
     public Page<Film> getFilmsFromList(List<Long> filmIds, int pageNo) {
         Pageable pageable = PageRequest.of(pageNo - 1, 20);
         return filmRepository.findAllByIdIn(filmIds, pageable);
+    }
+
+    public List<Film> getFilmsFromList(List<Long> filmIds) {
+        List<Film> films = filmRepository.findAllById(filmIds);
+        films.sort(Comparator.comparing(it -> filmIds.indexOf(it.getId())));
+        return films;
     }
 
     public Film createFilm(FilmCreationDTO dto) {

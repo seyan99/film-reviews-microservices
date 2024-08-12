@@ -22,6 +22,7 @@ public class CommentMapper {
                 .content(mapped)
                 .pageNo(comments.getNumber())
                 .pageSize(comments.getSize())
+                .totalElements(comments.getTotalElements())
                 .totalPages(comments.getTotalPages())
                 .last(comments.isLast())
                 .build();

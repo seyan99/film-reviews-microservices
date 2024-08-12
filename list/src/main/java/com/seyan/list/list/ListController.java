@@ -98,7 +98,7 @@ public class ListController {
     public ResponseEntity<CustomResponseWrapper<ListResponseDTO>> updateFilmList(
             @RequestBody @Valid ListUpdateDTO dto, @PathVariable Long listId) {
 
-        List list = listService.updateFilmList(dto, listId);
+        List list = listService.updateList(dto, listId);
         java.util.List<Long> filmIds = list.getFilmIds().stream().sorted(Comparator.comparing(ListEntry::getEntryOrder)).map(ListEntry::getFilmId).toList();
 
         //java.util.List<FilmPreviewResponseDTO> films = filmListService.getFilmsFromList(filmIds);
@@ -117,7 +117,7 @@ public class ListController {
 
     @DeleteMapping("/{listId}/delete")
     public ResponseEntity<CustomResponseWrapper<ListResponseDTO>> deleteFilmList(@PathVariable Long listId) {
-        listService.deleteFilmList(listId);
+        listService.deleteList(listId);
         CustomResponseWrapper<ListResponseDTO> wrapper = CustomResponseWrapper.<ListResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("List has been deleted")
@@ -129,7 +129,7 @@ public class ListController {
     @GetMapping("/by-id/{listId}")
     public ResponseEntity<CustomResponseWrapper<ListResponseDTO>> getListById(@PathVariable Long listId) {
 
-        List list = listService.getFilmListById(listId);
+        List list = listService.getListById(listId);
         java.util.List<Long> filmIds = list.getFilmIds().stream().sorted(Comparator.comparing(ListEntry::getEntryOrder)).map(ListEntry::getFilmId).toList();
 
         java.util.List<FilmPreviewResponseDTO> films = listService.getFilmsFromListById(filmIds);
@@ -156,19 +156,117 @@ public class ListController {
         List list = listService.getListByTitle(title);
         ListResponseDTO listDTO = listMapper.mapListToListResponseDTO(list);
 
-        PageableFilmPreviewResponseDTO films;
+        java.util.List<FilmPreviewResponseDTO> films;
         if (pageNo.isPresent()) {
-            films = listService.getFilmsFromList(list.getFilmIds(), pageNo.get());
+            films = listService.getFilmsFromList(list.getFilmIds(), "list-order", pageNo.get());
         } else {
-            films = listService.getFilmsFromList(list.getFilmIds(), 1);
+            films = listService.getFilmsFromList(list.getFilmIds(), "list-order", 1);
         }
+        PageableFilmPreviewResponseDTO filmsPageable = listMapper.mapFilmPreviewToPageableFilmReviewDTO(pageNo, films.size(), list.getFilmIds().size(), films);
 
-        PageableCommentResponseDTO comments = listService.getCommentsFromList(list.getId(), 1);
+        PageableCommentResponseDTO commentsPageable = listService.getCommentsFromList(list.getId(), 1);
 
         CustomResponseWrapper<ListPageViewResponseDTO> wrapper = CustomResponseWrapper.<ListPageViewResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message(String.format("List details by title: %s", title))
-                .data(new ListPageViewResponseDTO(listDTO, films, comments))
+                .data(new ListPageViewResponseDTO(listDTO, filmsPageable, commentsPageable))
+                .build();
+
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping({"/user/{username}/list/{title}", "/user/{username}/list/{title}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<ListPageViewResponseDTO>> getListByTitleAndUsername(
+            @PathVariable String title, @PathVariable String username, @PathVariable Optional<Integer> pageNo) {
+
+        List list = listService.getListByTitleAndUsername(title, username);
+        ListResponseDTO listDTO = listMapper.mapListToListResponseDTO(list);
+
+        java.util.List<FilmPreviewResponseDTO> films;
+        if (pageNo.isPresent()) {
+            films = listService.getFilmsFromList(list.getFilmIds(), "list-order", pageNo.get());
+        } else {
+            films = listService.getFilmsFromList(list.getFilmIds(), "list-order", 1);
+        }
+        PageableFilmPreviewResponseDTO filmsPageable = listMapper.mapFilmPreviewToPageableFilmReviewDTO(pageNo, films.size(), list.getFilmIds().size(), films);
+
+        PageableCommentResponseDTO commentsPageable = listService.getCommentsFromList(list.getId(), 1);
+
+        CustomResponseWrapper<ListPageViewResponseDTO> wrapper = CustomResponseWrapper.<ListPageViewResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message(String.format("List details by title: %s and username: %s", title, username))
+                .data(new ListPageViewResponseDTO(listDTO, filmsPageable, commentsPageable))
+                .build();
+
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping({"/user/{username}/list/{title}/by/{sorting}", "/user/{username}/list/{title}/by/{sorting}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<ListPageViewResponseDTO>> getListByTitleAndUsernameWithSorting(
+            @PathVariable String title, @PathVariable String username,
+            @PathVariable String sorting, @PathVariable Optional<Integer> pageNo) {
+
+        List list = listService.getListByTitleAndUsername(title, username);
+        ListResponseDTO listDTO = listMapper.mapListToListResponseDTO(list);
+
+        java.util.List<FilmPreviewResponseDTO> films;
+        if (pageNo.isPresent()) {
+            films = listService.getFilmsFromList(list.getFilmIds(), sorting, pageNo.get());
+        } else {
+            films = listService.getFilmsFromList(list.getFilmIds(), sorting, 1);
+        }
+        PageableFilmPreviewResponseDTO filmsPageable = listMapper.mapFilmPreviewToPageableFilmReviewDTO(pageNo, films.size(), list.getFilmIds().size(), films);
+
+        PageableCommentResponseDTO commentsPageable = listService.getCommentsFromList(list.getId(), 1);
+
+        CustomResponseWrapper<ListPageViewResponseDTO> wrapper = CustomResponseWrapper.<ListPageViewResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message(String.format("List details by title: %s and username: %s", title, username))
+                .data(new ListPageViewResponseDTO(listDTO, filmsPageable, commentsPageable))
+                .build();
+
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping({"/user/{username}", "/user/{username}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableListResponseDTO>> getAllByUser(
+            @PathVariable String username, @PathVariable Optional<Integer> pageNo) {
+
+        Page<List> filmLists;
+        if (pageNo.isPresent()) {
+            filmLists = listService.getListsByUsername(username, "when-updated", pageNo.get());
+        } else {
+            filmLists = listService.getListsByUsername(username, "when-updated", 1);
+        }
+
+        PageableListResponseDTO response = listMapper.mapListsPageToPageableListResponseDTO(filmLists);
+
+        CustomResponseWrapper<PageableListResponseDTO> wrapper = CustomResponseWrapper.<PageableListResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message(String.format("Film lists of user: %s", username))
+                .data(response)
+                .build();
+
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping({"/user/{username}/by/{sorting}", "/user/{username}/by/{sorting}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableListResponseDTO>> getAllByUserWithSorting(
+            @PathVariable String username, @PathVariable String sorting, @PathVariable Optional<Integer> pageNo) {
+
+        Page<List> filmLists;
+        if (pageNo.isPresent()) {
+            filmLists = listService.getListsByUsername(username, sorting, pageNo.get());
+        } else {
+            filmLists = listService.getListsByUsername(username, sorting, 1);
+        }
+
+        PageableListResponseDTO response = listMapper.mapListsPageToPageableListResponseDTO(filmLists);
+
+        CustomResponseWrapper<PageableListResponseDTO> wrapper = CustomResponseWrapper.<PageableListResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message(String.format("Film lists of user: %s with sorting: %s", username, sorting))
+                .data(response)
                 .build();
 
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
@@ -179,9 +277,9 @@ public class ListController {
 
         Page<List> allLists;
         if (pageNo.isPresent()) {
-            allLists = listService.getAllFilmLists(pageNo.get());
+            allLists = listService.getAllLists(pageNo.get());
         } else {
-            allLists = listService.getAllFilmLists(1);
+            allLists = listService.getAllLists(1);
         }
 
         PageableListResponseDTO response = listMapper.mapListsPageToPageableListResponseDTO(allLists);
@@ -195,22 +293,22 @@ public class ListController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping({"/user/{username}", "/user/{username}/page/{pageNo}"})
-    public ResponseEntity<CustomResponseWrapper<PageableListResponseDTO>> getAllByUser(
-            @PathVariable String username, @PathVariable Optional<Integer> pageNo) {
+    @GetMapping({"/by/{sorting}", "/by/{sorting}/page/{pageNo}"})
+    public ResponseEntity<CustomResponseWrapper<PageableListResponseDTO>> getAllWithSorting(
+            @PathVariable String sorting, @PathVariable Optional<Integer> pageNo) {
 
-        Page<List> filmLists;
+        Page<List> allLists;
         if (pageNo.isPresent()) {
-            filmLists = listService.getFilmListsByUsername(username, pageNo.get());
+            allLists = listService.getAllListsWithSorting(sorting, pageNo.get());
         } else {
-            filmLists = listService.getFilmListsByUsername(username, 1);
+            allLists = listService.getAllListsWithSorting(sorting, 1);
         }
 
-        PageableListResponseDTO response = listMapper.mapListsPageToPageableListResponseDTO(filmLists);
+        PageableListResponseDTO response = listMapper.mapListsPageToPageableListResponseDTO(allLists);
 
         CustomResponseWrapper<PageableListResponseDTO> wrapper = CustomResponseWrapper.<PageableListResponseDTO>builder()
                 .status(HttpStatus.OK.value())
-                .message(String.format("Film lists of user: %s", username))
+                .message(String.format("Film lists sorted by: %s", sorting))
                 .data(response)
                 .build();
 

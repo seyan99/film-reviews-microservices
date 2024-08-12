@@ -3,6 +3,8 @@ package com.seyan.list.dto;
 
 import com.seyan.list.entry.ListEntry;
 import com.seyan.list.entry.ListEntryId;
+import com.seyan.list.external.film.FilmPreviewResponseDTO;
+import com.seyan.list.external.film.PageableFilmPreviewResponseDTO;
 import com.seyan.list.list.List;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -17,6 +19,25 @@ import java.util.stream.Collectors;
 
 @Component
 public class ListMapper {
+    public PageableFilmPreviewResponseDTO mapFilmPreviewToPageableFilmReviewDTO(
+            Optional<Integer> pageNo,
+            int pageSize,
+            int totalElements,
+            java.util.List<FilmPreviewResponseDTO> content
+            ) {
+        int page = pageNo.orElse(0);
+        int partialPages = totalElements % 5 > 0 ? 1 : 0;
+        int fullPages = totalElements / 5;
+        return PageableFilmPreviewResponseDTO.builder()
+                .pageNo(page)
+                .pageSize(pageSize)
+                .totalElements(totalElements)
+                .totalPages(fullPages + partialPages)
+                .last(page == fullPages + partialPages)
+                .content(content)
+                .build();
+    }
+
     public PageableListResponseDTO mapListsPageToPageableListResponseDTO(Page<List> comments) {
         java.util.List<ListResponseDTO> mapped = mapListToListResponseDTO(comments.getContent());
 
@@ -32,6 +53,7 @@ public class ListMapper {
     public List mapListCreationDTOToList(ListCreationDTO dto) {
         List list = new List();
         BeanUtils.copyProperties(dto, list, getNullFieldNames(dto));
+        list.setLastUpdateDate(dto.creationDate());
         return list;
     }
 
@@ -88,7 +110,9 @@ public class ListMapper {
                 //Collections.emptyList(),
                 list.getCommentIds().size(),
                 //Collections.emptyList(),
-                list.getFilmIds().size()
+                list.getFilmIds().size(),
+                list.getCreationDate(),
+                list.getLastUpdateDate()
         );
     }
 
