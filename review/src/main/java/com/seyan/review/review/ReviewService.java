@@ -5,6 +5,7 @@ import com.seyan.review.dto.ReviewCreationDTO;
 import com.seyan.review.dto.ReviewMapper;
 import com.seyan.review.dto.ReviewUpdateDTO;
 import com.seyan.review.exception.ReviewNotFoundException;
+import com.seyan.review.external.activity.FilmClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +23,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewMapper reviewMapper;
     private final ActivityClient activityClient;
+    private final FilmClient filmClient;
 
     public Review addReviewComment(Long reviewId, Long commentId) {
         Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewNotFoundException(
@@ -48,8 +50,10 @@ public class ReviewService {
 
         if (review.getLikedUsersIds().contains(userId)) {
             review.getLikedUsersIds().remove(userId);
+            review.setLikedCount(review.getLikedCount() - 1);
         } else {
             review.getLikedUsersIds().add(userId);
+            review.setLikedCount(review.getLikedCount() + 1);
         }
         return reviewRepository.save(review);
     }
@@ -64,6 +68,7 @@ public class ReviewService {
         if (reviewsCount < 1 && dto.content() != null) {
             activityClient.updateHasReview(dto.userId(), dto.filmId());
         }
+        filmClient.updateReviewCount(dto.filmId(), true);
 
         return saved;
     }
@@ -96,6 +101,7 @@ public class ReviewService {
         if (reviewsCount == 0) {
             activityClient.updateHasReview(review.getUserId(), review.getFilmId());
         }
+        filmClient.updateReviewCount(review.getFilmId(), false);
     }
 
     public int countUserReviewsForFilm(Long userId, Long filmId) {
@@ -139,7 +145,7 @@ public class ReviewService {
     }
 
     public Page<Review> getPopularReviews(String title, Integer pageNo) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "likedUsersIds");
+        Sort sort = Sort.by(Sort.Direction.DESC, "likedCount");
         Pageable pageable = PageRequest.of(pageNo - 1, 12, sort);
         return reviewRepository.findByTitleAndContentNotNull(title, pageable);
     }

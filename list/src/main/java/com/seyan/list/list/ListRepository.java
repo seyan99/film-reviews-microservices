@@ -16,7 +16,7 @@ public interface ListRepository extends JpaRepository<List, Long> {
     Page<List> findByUsername(String username, Pageable pageable);
 
     //@Query(value = "select * from lists where title = 'a 1'", nativeQuery = true)
-    Optional<List> findByTitleContaining(String title);
+    Optional<List> findByTitle(String title);
 
     @Query(value = "select * from lists where title = :title and username = :username", nativeQuery = true)
     Optional<List> findByTitleAndUsername(@Param("title") String title, @Param("username") String username);

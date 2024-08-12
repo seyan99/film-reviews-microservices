@@ -33,9 +33,9 @@ public class FilmSearchDao {
             addGenrePredicate(genre, predicates, root, builder);
         }
 
-        if (decade == null || genre == null) {
+        if ((decade == null & genre != null) || (decade != null & genre == null)) {
             criteriaQuery.where(predicates.get(0));
-        } else {
+        } else if (decade != null & genre != null){
             criteriaQuery.where(builder.and(predicates.get(0), predicates.get(1)));
         }
 
@@ -65,10 +65,10 @@ public class FilmSearchDao {
                 return builder.asc(root.get("releaseDate"));
             }
             case "rating-highest" -> {
-                return builder.desc(root.get("rating"));
+                return builder.desc(root.get("avgRating"));
             }
             case "rating-lowest" -> {
-                return builder.asc(root.get("rating"));
+                return builder.asc(root.get("avgRating"));
             }
             case "length-shortest" -> {
                 return builder.asc(root.get("runningTimeMinutes"));
@@ -127,10 +127,10 @@ public class FilmSearchDao {
             }
             default -> {
                 throw new SortingParametersException(
-                        "Could not parse decade parameter, should be from \"1960\" to \"2020s\"");
+                        "Could not parse decade parameter, should be from \"1960s\" to \"2020s\"");
             }
         }
-        Predicate decadePredicate = builder.between(root.get("releaseDate"), dateBefore, dateAfter);
+        Predicate decadePredicate = builder.between(root.get("releaseDate"), dateAfter, dateBefore);
         predicates.add(decadePredicate);
     }
 }

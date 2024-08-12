@@ -1,6 +1,5 @@
 package com.seyan.film.film;
 
-import com.seyan.film.dto.film.FilmPreviewResponseDTO;
 import com.seyan.film.external.activity.ActivityClient;
 import com.seyan.film.external.activity.ActivityOnFilmResponseDTO;
 import com.seyan.film.dto.film.FilmCreationDTO;
@@ -8,7 +7,6 @@ import com.seyan.film.dto.film.FilmMapper;
 import com.seyan.film.dto.film.FilmUpdateDTO;
 import com.seyan.film.exception.FilmNotFoundException;
 import com.seyan.film.exception.ProfileNotFoundException;
-import com.seyan.film.exception.SortingParametersException;
 import com.seyan.film.profile.Profile;
 import com.seyan.film.profile.ProfileRepository;
 import com.seyan.film.external.review.ReviewClient;
@@ -19,13 +17,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Service
@@ -213,19 +207,6 @@ public class FilmService {
         filmRepository.deleteById(id);
     }
 
-    public List<Film> getAllFilmsByTitle(String title) {
-
-        String[] split = title.split("-");
-        StringBuilder builder = new StringBuilder();
-
-        for (int i = 0; i < split.length - 1; i++) {
-            builder.append(split[i]).append(" ");
-        }
-        String parsedTitle = builder.append(split[split.length - 1]).toString();
-
-        return filmRepository.findByTitleContaining(parsedTitle);
-    }
-
     public Page<Film> getAllFilmsByTitle(String title, int pageNo) {
 
         String[] split = title.split("-");
@@ -238,7 +219,7 @@ public class FilmService {
 
         Pageable pageable = PageRequest.of(pageNo - 1, 20);
 
-        return filmRepository.findByTitleContaining(parsedTitle, pageable);
+        return filmRepository.findByTitleContainingIgnoreCase(parsedTitle, pageable);
     }
 
     public Film getFilmByUrl(String filmUrl) {
@@ -247,210 +228,21 @@ public class FilmService {
         ));
     }
 
-    public List<Film> getAllFilmsWithParams(Map<String, String> params, Long userId) {
-        Stream<Film> stream;
-
-        if (params.containsKey("popular")) {
-            stream = filterFilmsByPopularity(params.get("popular"));
-        } else {
-            stream = filmRepository.findAll().stream();
-        }
-
-        if (params.containsKey("decade")) {
-            stream = filterFilmsByDecade(stream, params.get("decade"));
-        }
-
-        if (params.containsKey("year")) {
-            stream = filterFilmsByYear(stream, params.get("year"));
-        }
-
-        if (params.containsKey("genre")) {
-            stream = filterFilmsByGenre(stream, params.get("genre"));
-        }
-
-        if (params.containsKey("name")) {
-            stream = filterFilmsByName(stream, params.get("name"));
-        }
-
-        if (params.containsKey("release")) {
-            stream = filterFilmsByReleaseDate(stream, params.get("release"));
-        }
-
-        if (params.containsKey("rating")) {
-            stream = filterFilmsByRating(stream, params.get("rating"));
-        }
-
-        if (params.containsKey("your-rating")) {
-            stream = filterFilmsByYourRating(stream, params.get("your-rating"), userId);
-        }
-
-        if (params.containsKey("length")) {
-            stream = filterFilmsByLength(stream, params.get("length"));
-        }
-
-        return stream.toList();
-    }
-
-    private Stream<Film> filterFilmsByName(Stream<Film> stream, String name) {
-        switch (name) {
-            case "asc" -> {
-                return stream.sorted(Comparator.comparing(Film::getTitle));
-            }
-            case "desc" -> {
-                return stream.sorted(Comparator.comparing(Film::getTitle).reversed());
-            }
-            default -> {
-                throw new SortingParametersException(
-                        "Could not parse name parameter, should be \"asc\" or \"desc\"");
-            }
-        }
-    }
-
-    private Stream<Film> filterFilmsByLength(Stream<Film> stream, String length) {
-        switch (length) {
-            case "shortest" -> {
-                return stream.sorted(Comparator.comparing(Film::getRunningTimeMinutes));
-            }
-            case "longest" -> {
-                return stream.sorted(Comparator.comparing(Film::getRunningTimeMinutes).reversed());
-            }
-            default -> {
-                throw new SortingParametersException(
-                        "Could not parse length parameter, should be \"shortest\" or \"longest\"");
-            }
-        }
-    }
-
-    private Stream<Film> filterFilmsByYourRating(Stream<Film> stream, String rating, Long userId) {
-        List<ActivityOnFilmResponseDTO> activityList = activityClient.getActivityByUserIdAndByRatingGreaterThan(userId, 0.0).getData();
-        Map<Long, Double> filmIdAndRatingList = activityList.stream().collect(Collectors.toMap(it -> it.id().getFilmId(), ActivityOnFilmResponseDTO::rating));
-
-        Map<Boolean, List<Film>> filmLists = stream
-                .collect(Collectors.partitioningBy(film -> filmIdAndRatingList.containsKey(film.getId())));
-
-        List<Film> filmsWithRating = filmLists.get(true);
-
-        List<Film> filmsWithoutRating = filmLists.get(false);
-
-        switch (rating) {
-            case "highest" -> {
-                List<Film> withRatingSorted = new java.util.ArrayList<>(
-                        filmsWithRating.stream().sorted(Comparator.comparingDouble(o -> filmIdAndRatingList.get(o.getId()))).toList());
-                Collections.reverse(withRatingSorted);
-                return Stream.concat(
-                        withRatingSorted.stream(),
-                        filmsWithoutRating.stream().sorted(Comparator.comparingDouble(Film::getAvgRating).reversed()));
-            }
-            case "lowest" -> {
-                return Stream.concat(
-                        filmsWithRating.stream().sorted(Comparator.comparing(o -> filmIdAndRatingList.get(o.getId()))),
-                        filmsWithoutRating.stream().sorted(Comparator.comparingDouble(Film::getAvgRating)));
-            }
-            default -> {
-                throw new SortingParametersException(
-                        "Could not parse rating parameter, should be \"highest\" or \"lowest\"");
-            }
-        }
-    }
-
-    private Stream<Film> filterFilmsByGenre(Stream<Film> stream, String genre) {
-        return stream.filter(it -> it.getGenre().equals(Genre.valueOf(genre)));
-    }
-
-    private Stream<Film> filterFilmsByDecade(Stream<Film> stream, String decade) {
-        if (decade.equals("upcoming")) {
-            LocalDate now = LocalDate.now();
-            return stream.filter(it -> it.getReleaseDate().isAfter(now));
-        }
-
-        int decadeParsed = Integer.parseInt(decade);
-        return stream.filter(it -> it.getReleaseDate().getYear() >= decadeParsed && it.getReleaseDate().getYear() < decadeParsed + 10);
-    }
-
-    private Stream<Film> filterFilmsByYear(Stream<Film> stream, String year) {
-        if (year.equals("upcoming")) {
-            LocalDate now = LocalDate.now();
-            return stream.filter(it -> it.getReleaseDate().isAfter(now));
-        }
-
-        int yearParsed = Integer.parseInt(year);
-        return stream.filter(it -> it.getReleaseDate().getYear() == yearParsed);
-    }
-
-    private Stream<Film> filterFilmsByPopularity(String popularity) {
-        switch (popularity) {
-            case "all-time" -> {
-                return getFilmsBasedOnIdRepetitiveness().stream();
-            }
-            case "this-year" -> {
-                return getFilmsBasedOnReviewDateAfter(LocalDate.now().minusYears(1)).stream();
-            }
-            case "this-month" -> {
-                return getFilmsBasedOnReviewDateAfter(LocalDate.now().minusMonths(1)).stream();
-            }
-            case "this-week" -> {
-                return getFilmsBasedOnReviewDateAfter(LocalDate.now().minusDays(7)).stream();
-            }
-            default -> {
-                throw new SortingParametersException(
-                        "Could not parse popularity parameter, should be \"all-time\", \"this-month\", \"this-week\" or \"this-year\"");
-            }
-        }
-    }
-
-    //todo sorting in review service
-    private List<Film> getFilmsBasedOnReviewDateAfter(LocalDate date) {
-        List<Long> filmIdList = reviewClient.getFilmIdsBasedOnReviewDateAfter(date).getData();
-        List<Long> filmIdListSorted = filmIdList.stream().sorted(Comparator.comparing(it -> Collections.frequency(filmIdList, it)).reversed()).distinct().toList();
-
-        List<Film> filmList = filmRepository.findAllById(filmIdListSorted);
-        filmList.sort(Comparator.comparing(it -> filmIdListSorted.indexOf(it.getId())));
-
-        return filmList;
-    }
-
-    private List<Film> getFilmsBasedOnIdRepetitiveness() {
-        List<Long> filmIdList = reviewClient.getAllFilmIds().getData();
-        List<Long> filmIdListSorted = filmIdList.stream().sorted(Comparator.comparing(it -> Collections.frequency(filmIdList, it)).reversed()).distinct().toList();
-
-        List<Film> filmList = filmRepository.findAllById(filmIdListSorted);
-        filmList.sort(Comparator.comparing(it -> filmIdListSorted.indexOf(it.getId())));
-
-        return filmList;
-    }
-
-    private Stream<Film> filterFilmsByReleaseDate(Stream<Film> stream, String release) {
-        switch (release) {
-            case "newest" -> {
-                return stream.sorted(Comparator.comparing(Film::getReleaseDate).reversed());
-            }
-            case "earliest" -> {
-                return stream.sorted(Comparator.comparing(Film::getReleaseDate));
-            }
-            default -> {
-                throw new SortingParametersException(
-                        "Could not parse release parameter, should be \"earliest\" or \"newest\"");
-            }
-        }
-    }
-
-    private Stream<Film> filterFilmsByRating(Stream<Film> stream, String rating) {
-        switch (rating) {
-            case "highest" -> {
-                return stream.sorted(Comparator.comparing(Film::getAvgRating).reversed());
-            }
-            case "lowest" -> {
-                return stream.sorted(Comparator.comparing(Film::getAvgRating));
-            }
-            default -> {
-                throw new SortingParametersException(
-                        "Could not parse rating parameter, should be \"highest\" or \"lowest\"");
-            }
-        }
-    }
-
     public Page<Film> getFilmsWithDecadeAndGenreAndSorting(String decade, String genre, String sorting, Integer pageNo) {
         Pageable pageable = PageRequest.of(pageNo - 1, 25);
         return filmSearchDao.findByDecadeAndGenreAndSorting(decade, genre, sorting, pageable);
+    }
+
+    public Film updateReviewCount(Long filmId, boolean add) {
+        Film film = filmRepository.findById(filmId).orElseThrow(() -> new FilmNotFoundException(
+                String.format("No film found with the provided ID: %s", filmId)));
+
+        if (add) {
+            film.setReviewCount(film.getReviewCount() + 1);
+        } else {
+            film.setReviewCount(film.getReviewCount() - 1);
+        }
+
+        return filmRepository.save(film);
     }
 }

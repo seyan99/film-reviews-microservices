@@ -116,7 +116,7 @@ public class ActivityOnFilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @PatchMapping("/update-has-review")
+    @PutMapping("/update-has-review")
     public ResponseEntity<CustomResponseWrapper<ActivityOnFilmResponseDTO>> updateHasReview(
             @RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId) {
         ActivityOnFilm activity = activityService.updateHasReview(userId, filmId);

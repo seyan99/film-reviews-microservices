@@ -147,19 +147,6 @@ public class FilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    //todo delete ?
-    @GetMapping
-    public ResponseEntity<CustomResponseWrapper<List<FilmResponseDTO>>> getAllFilms(
-            @RequestParam(required = false) Map<String, String> params, @RequestParam(required = false) Long userId) {
-        List<Film> films = filmService.getAllFilmsWithParams(params, userId);
-        List<FilmResponseDTO> response = filmMapper.mapFilmToFilmResponseDTO(films);
-        CustomResponseWrapper<List<FilmResponseDTO>> wrapper = CustomResponseWrapper.<List<FilmResponseDTO>>builder()
-                .status(HttpStatus.OK.value())
-                .message("List of all films")
-                .data(response)
-                .build();
-        return new ResponseEntity<>(wrapper, HttpStatus.OK);
-    }
 
     //todo replace userId with principal
     @GetMapping({"/decade/{decade}/genre/{genre}/by/{sorting}", "/decade/{decade}/genre/{genre}/by/{sorting}/page/{pageNo}"})
@@ -300,7 +287,7 @@ public class FilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @PatchMapping("{id}/update/add-cast")
+    @PatchMapping("/{id}/update/add-cast")
     public ResponseEntity<CustomResponseWrapper<FilmResponseDTO>> addFilmCastMember(
             @PathVariable(value = "id") Long filmId, @RequestBody List<Long> profileIdList) {
 
@@ -316,7 +303,7 @@ public class FilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @PatchMapping("{id}/update/remove-cast")
+    @PatchMapping("/{id}/update/remove-cast")
     public ResponseEntity<CustomResponseWrapper<FilmResponseDTO>> removeFilmCastMember
             (@PathVariable(value = "id") Long filmId, @RequestBody List<Long> profileIdList) {
 
@@ -332,11 +319,27 @@ public class FilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @PatchMapping("{id}/update/director")
+    @PatchMapping("/{id}/update/director")
     public ResponseEntity<CustomResponseWrapper<FilmResponseDTO>> updateFilmDirector
             (@PathVariable(value = "id") Long filmId, @RequestParam(required = false) Long directorId) {
 
         Film film = filmService.updateDirector(directorId, filmId);
+        FilmResponseDTO response = filmMapper.mapFilmToFilmResponseDTO(film);
+
+        CustomResponseWrapper<FilmResponseDTO> wrapper = CustomResponseWrapper.<FilmResponseDTO>builder()
+                .status(HttpStatus.OK.value())
+                .message("Film with updated cast")
+                .data(response)
+                .build();
+
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @PutMapping("/update-review-count")
+    public ResponseEntity<CustomResponseWrapper<FilmResponseDTO>> updateReviewCount
+            (@RequestParam(value = "id") Long filmId, @RequestParam(value = "add") boolean add) {
+
+        Film film = filmService.updateReviewCount(filmId, add);
         FilmResponseDTO response = filmMapper.mapFilmToFilmResponseDTO(film);
 
         CustomResponseWrapper<FilmResponseDTO> wrapper = CustomResponseWrapper.<FilmResponseDTO>builder()

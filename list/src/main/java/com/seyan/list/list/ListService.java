@@ -15,12 +15,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
@@ -150,8 +148,7 @@ public class ListService {
 
     public List getListByTitle(String title) {
         String parsedTitle = parseTitle(title);
-        System.out.println("parsedTitle = " + parsedTitle);
-        return listRepository.findByTitleContaining(title).orElseThrow(() -> new ListNotFoundException(
+        return listRepository.findByTitle(parsedTitle).orElseThrow(() -> new ListNotFoundException(
                 String.format("No list found with the provided title: %s", parsedTitle)
         ));
     }
@@ -164,7 +161,7 @@ public class ListService {
 
     public List getListByTitleAndUsername(String title, String username) {
         String parsedTitle = parseTitle(title);
-        return listRepository.findByTitleAndUsername(title, username).orElseThrow(() -> new ListNotFoundException(
+        return listRepository.findByTitleAndUsername(parsedTitle, username).orElseThrow(() -> new ListNotFoundException(
                 String.format("No list found with the provided title: %s and username: %s", parsedTitle, username)));
     }
 

@@ -227,7 +227,7 @@ public class ReviewController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping({"/user/{username}/", "/user/{username}/page/{pageNo}"})
+    @GetMapping({"/user/{username}", "/user/{username}/page/{pageNo}"})
     public ResponseEntity<CustomResponseWrapper<PageableReviewResponseDTO>> getAllReviewsByUsername(
             @PathVariable String username, @PathVariable Optional<Integer> pageNo) {
 
@@ -247,7 +247,7 @@ public class ReviewController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @GetMapping({"/user/{username}/{title}", "/user/{username}/{title}/{reviewId}"})
+    @GetMapping({"/user/{username}/title/{title}", "/user/{username}/title/{title}/{reviewId}"})
     public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> getReviewsByUsernameAndTitle(
             @PathVariable String username,  @PathVariable String title, @PathVariable Optional<Long> reviewId) {
 

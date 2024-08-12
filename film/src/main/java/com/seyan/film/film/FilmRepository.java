@@ -12,9 +12,9 @@ import java.util.Optional;
 public interface FilmRepository extends JpaRepository<Film, Long> {
     Optional<Film> findByUrl(String filmUrl);
 
-    List<Film> findByTitleContaining(String title);
+    List<Film> findByTitleContainingIgnoreCase(String title);
 
-    Page<Film> findByTitleContaining(String title, Pageable pageable);
+    Page<Film> findByTitleContainingIgnoreCase(String title, Pageable pageable);
 
     int countByTitleIgnoreCase(String title);
 

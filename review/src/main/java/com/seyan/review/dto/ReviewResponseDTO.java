@@ -12,8 +12,10 @@ public record ReviewResponseDTO(
         Boolean containsSpoilers,
         LocalDateTime creationDate,
         Long filmId,
-        Long authorId,
-        int reviewLikeCount,
-        int commentCount
+        String title,
+        Long userId,
+        String username,
+        long reviewLikeCount,
+        long commentCount
 ) {
 }

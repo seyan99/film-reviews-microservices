@@ -35,6 +35,7 @@ public class Review {
     private String username;
 
     private Set<Long> likedUsersIds;
+    private Long likedCount;
     private Set<Long> commentIds;
     private LocalDate watchedOnDate;
     private Boolean watchedThisFilmBefore;
@@ -42,6 +43,7 @@ public class Review {
     public Review() {
         this.creationDate = LocalDateTime.now();
         this.likedUsersIds = new HashSet<>();
+        this.likedCount = 0L;
         this.commentIds = new HashSet<>();
     }
 }

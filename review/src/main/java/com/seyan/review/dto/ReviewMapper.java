@@ -22,6 +22,7 @@ public class ReviewMapper {
                 .content(mapped)
                 .pageNo(comments.getNumber())
                 .pageSize(comments.getSize())
+                .totalElements(comments.getTotalElements())
                 .totalPages(comments.getTotalPages())
                 .last(comments.isLast())
                 .build();
@@ -51,8 +52,10 @@ public class ReviewMapper {
                 review.getContainsSpoilers(),
                 review.getCreationDate(),
                 review.getFilmId(),
+                review.getTitle(),
                 review.getUserId(),
-                review.getLikedUsersIds().size(),
+                review.getUsername(),
+                review.getLikedCount(),
                 review.getCommentIds().size()
         );
     }
