@@ -1,4 +1,4 @@
-package com.seyan.activity.review;
+package com.seyan.activity.external.review;
 
 import com.seyan.activity.responsewrapper.CustomResponseWrapper;
 import jakarta.validation.Valid;

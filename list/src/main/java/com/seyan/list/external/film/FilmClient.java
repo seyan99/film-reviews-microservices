@@ -22,4 +22,7 @@ public interface FilmClient {
 
     @GetMapping("/from-list")
     public CustomResponseWrapper<List<FilmPreviewResponseDTO>> getFilmsFromList(@RequestBody List<Long> filmIds);
+
+    @GetMapping("/first-five-from-list")
+    public CustomResponseWrapper<List<FilmPreviewResponseDTO>> getFirstFiveFilmsFromList(@RequestBody List<Long> filmIds);
 }

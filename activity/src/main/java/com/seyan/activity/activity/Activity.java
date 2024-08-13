@@ -18,9 +18,9 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "activity_on_film")
 @DynamicUpdate
-public class ActivityOnFilm {
+public class Activity {
     @EmbeddedId
-    private ActivityOnFilmId id;
+    private ActivityId id;
     private Boolean isWatched;
     private Boolean isLiked;
     private Boolean isInWatchlist;

@@ -1,6 +1,7 @@
 package com.seyan.film.film;
 
 import com.seyan.film.external.activity.ActivityClient;
+import com.seyan.film.external.activity.ActivityOnFilmId;
 import com.seyan.film.external.activity.ActivityOnFilmResponseDTO;
 import com.seyan.film.dto.film.FilmCreationDTO;
 import com.seyan.film.dto.film.FilmMapper;
@@ -11,15 +12,14 @@ import com.seyan.film.profile.Profile;
 import com.seyan.film.profile.ProfileRepository;
 import com.seyan.film.external.review.ReviewClient;
 import com.seyan.film.external.review.ReviewResponseDTO;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -31,14 +31,32 @@ public class FilmService {
     private final ReviewClient reviewClient;
     private final FilmSearchDao filmSearchDao;
 
-    //todo resilience
+    @RateLimiter(name = "responseBreaker", fallbackMethod = "reviewFallback")
     public Map<String, List<ReviewResponseDTO>> getLatestAndPopularReviewsForFilm(Long filmId) {
         return reviewClient.latestAndPopularReviewsForFilm(filmId).getData();
     }
 
-    //todo resilience
+    public Map<String, List<ReviewResponseDTO>> reviewFallback(Exception e) {
+        Map<String, List<ReviewResponseDTO>> reviewFallback = new HashMap<>();
+        reviewFallback.put("latest", Collections.emptyList());
+        reviewFallback.put("popular", Collections.emptyList());
+        return reviewFallback;
+    }
+
+    @RateLimiter(name = "responseBreaker", fallbackMethod = "activityFallback")
     public ActivityOnFilmResponseDTO getFilmActivity(Long userId, Long filmId) {
         return activityClient.getFilmActivity(userId, filmId).getData();
+    }
+
+    public ActivityOnFilmResponseDTO activityFallback(Exception e) {
+        return ActivityOnFilmResponseDTO.builder()
+                .id(new ActivityOnFilmId(0L, 0L))
+                .isWatched(false)
+                .isLiked(false)
+                .isInWatchlist(false)
+                .rating(0.0)
+                .hasReview(false)
+                .build();
     }
 
     public Page<Film> getFilmsFromList(List<Long> filmIds, int pageNo) {

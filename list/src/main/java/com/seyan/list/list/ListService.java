@@ -11,6 +11,7 @@ import com.seyan.list.exception.ListNotFoundException;
 import com.seyan.list.external.comment.PageableCommentResponseDTO;
 import com.seyan.list.external.film.FilmClient;
 import com.seyan.list.external.film.FilmPreviewResponseDTO;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,8 +37,29 @@ public class ListService {
     private final CommentClient commentClient;
     private final ListSearchDao listSearchDao;
 
+    @RateLimiter(name = "responseBreaker", fallbackMethod = "latestCommentsFallback")
     public java.util.List<CommentResponseDTO> getLatestComments(Long postId) {
         return commentClient.getLatestByPost(postId, "LIST").getData();
+    }
+
+    public java.util.List<CommentResponseDTO> latestCommentsFallback(Exception e) {
+        return Collections.emptyList();
+    }
+
+    @RateLimiter(name = "responseBreaker", fallbackMethod = "commentsFromListFallback")
+    public PageableCommentResponseDTO getCommentsFromList(Long listId, int pageNo) {
+        return commentClient.getAllByList(listId, pageNo).getData();
+    }
+
+    public PageableCommentResponseDTO commentsFromListFallback(Exception e) {
+        return PageableCommentResponseDTO.builder()
+                .content(Collections.emptyList())
+                .last(true)
+                .pageNo(0)
+                .pageSize(0)
+                .totalElements(0)
+                .totalPages(0)
+                .build();
     }
 
     public List addListComment(Long listId, Long commentId) {
@@ -200,6 +223,7 @@ public class ListService {
         listRepository.deleteById(id);
     }
 
+    @RateLimiter(name = "responseBreaker", fallbackMethod = "filmsFallback")
     public java.util.List<FilmPreviewResponseDTO> getFilmsFromListById(java.util.List<Long> filmIds) {
         java.util.List<FilmPreviewResponseDTO> films = filmClient.getFilmsByIdList(filmIds).getData();
 
@@ -208,6 +232,17 @@ public class ListService {
         return films;
     }
 
+    @RateLimiter(name = "responseBreaker", fallbackMethod = "filmsFallback")
+    public java.util.List<FilmPreviewResponseDTO> getFirstFiveFilmsFromList(java.util.List<ListEntry> entries) {
+        java.util.List<Long> filmIds = entries.stream()
+                .sorted(Comparator.comparing(ListEntry::getEntryOrder))
+                .limit(5)
+                .map(ListEntry::getFilmId)
+                .toList();
+        return filmClient.getFirstFiveFilmsFromList(filmIds).getData();
+    }
+
+    @RateLimiter(name = "responseBreaker", fallbackMethod = "filmsFallback")
     public java.util.List<FilmPreviewResponseDTO> getFilmsFromList(java.util.List<ListEntry> entries, String filmsOrder, int pageNo) {
         int pageStartElement = 0;
         int pageEndElement;
@@ -233,6 +268,10 @@ public class ListService {
         return filmClient.getFilmsFromList(filmIds).getData();
     }
 
+    public java.util.List<FilmPreviewResponseDTO> filmsFallback(Exception e) {
+        return Collections.emptyList();
+    }
+
     private java.util.List<Long> sortEntriesToIds(java.util.List<ListEntry> entries, String sorting) {
         switch (sorting) {
             case "list-order" -> {
@@ -250,9 +289,5 @@ public class ListService {
             default -> throw new SortingParametersException(
                     "Could not parse sorting parameter");
         }
-    }
-
-    public PageableCommentResponseDTO getCommentsFromList(Long listId, int pageNo) {
-        return commentClient.getAllByList(listId, pageNo).getData();
     }
 }

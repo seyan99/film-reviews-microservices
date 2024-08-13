@@ -1,9 +1,9 @@
 package com.seyan.activity.dto;
 
 
-import com.seyan.activity.activity.ActivityOnFilm;
-import com.seyan.activity.activity.ActivityOnFilmId;
-import com.seyan.activity.review.ReviewCreationDTO;
+import com.seyan.activity.activity.Activity;
+import com.seyan.activity.activity.ActivityId;
+import com.seyan.activity.external.review.ReviewCreationDTO;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.stereotype.Component;
@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-public class ActivityOnFilmMapper {
-    public ActivityOnFilmResponseDTO mapActivityOnFilmToActivityOnFilmResponse(ActivityOnFilm activity) {
-        return new ActivityOnFilmResponseDTO(
+public class ActivityMapper {
+    public ActivityResponseDTO mapActivityToActivityResponseDTO(Activity activity) {
+        return new ActivityResponseDTO(
                 activity.getId(),
                 activity.getIsWatched(),
                 activity.getIsLiked(),
@@ -27,13 +27,13 @@ public class ActivityOnFilmMapper {
         );
     }
 
-    public List<ActivityOnFilmResponseDTO> mapActivityOnFilmToActivityOnFilmResponse(List<ActivityOnFilm> films) {
+    public List<ActivityResponseDTO> mapActivityToActivityResponseDTO(List<Activity> films) {
         if (films == null) {
             return null;
         }
 
         return films.stream()
-                .map(this::mapActivityOnFilmToActivityOnFilmResponse)
+                .map(this::mapActivityToActivityResponseDTO)
                 .toList();
     }
 
@@ -52,9 +52,9 @@ public class ActivityOnFilmMapper {
         return fieldNames.toArray(result);
     }
 
-    public ActivityOnFilm mapActivityAndReviewCreationDTOToActivityOnFilm(ActivityAndReviewCreationDTO dto) {
-        return ActivityOnFilm.builder()
-                .id(new ActivityOnFilmId(
+    public Activity mapActivityAndReviewCreationDTOToActivity(ActivityAndReviewCreationDTO dto) {
+        return Activity.builder()
+                .id(new ActivityId(
                         dto.userId(),
                         dto.filmId()
                 ))

@@ -1,11 +1,11 @@
 package com.seyan.activity.dto;
 
-import com.seyan.activity.activity.ActivityOnFilmId;
+import com.seyan.activity.activity.ActivityId;
 
 import java.time.LocalDate;
 
-public record ActivityOnFilmResponseDTO(
-        ActivityOnFilmId id,
+public record ActivityResponseDTO(
+        ActivityId id,
         Boolean isWatched,
         Boolean isLiked,
         Boolean isInWatchlist,

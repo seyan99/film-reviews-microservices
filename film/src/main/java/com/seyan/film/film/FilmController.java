@@ -46,7 +46,7 @@ public class FilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @PatchMapping("/update-like-count")
+    @PutMapping("/update-like-count")
     public ResponseEntity<CustomResponseWrapper<FilmResponseDTO>> updateLikeCount(@RequestParam("id") Long id, @RequestParam Boolean toAdd) {
         Film film = filmService.updateLikeCount(id, toAdd);
         FilmResponseDTO response = filmMapper.mapFilmToFilmResponseDTO(film);
@@ -58,7 +58,7 @@ public class FilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    @PatchMapping("/update-watched-count")
+    @PutMapping("/update-watched-count")
     public ResponseEntity<CustomResponseWrapper<FilmResponseDTO>> updateWatchedCount(@RequestParam("id") Long id, @RequestParam Boolean toAdd) {
         Film film = filmService.updateWatchedCount(id, toAdd);
         FilmResponseDTO response = filmMapper.mapFilmToFilmResponseDTO(film);
@@ -70,8 +70,7 @@ public class FilmController {
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
     }
 
-    //todo as map?
-    @PatchMapping("/update-avg-rating")
+    @PutMapping("/update-avg-rating")
     public ResponseEntity<CustomResponseWrapper<FilmResponseDTO>> updateAvgRating(@RequestParam("id") Long id, @RequestParam Double rating) {
         Film film = filmService.updateAvgRating(id, rating);
         FilmResponseDTO response = filmMapper.mapFilmToFilmResponseDTO(film);
@@ -132,7 +131,7 @@ public class FilmController {
 
     //todo get user id from principal
     @GetMapping("/{filmUrl}")
-    public ResponseEntity<CustomResponseWrapper<FilmPageViewResponseDTO>> filmDetailsByUrl(
+    public ResponseEntity<CustomResponseWrapper<FilmPageViewResponseDTO>> filmPageViewsByUrl(
             @PathVariable(value = "filmUrl") String filmUrl, @RequestParam Long userId) {
 
         Film film = filmService.getFilmByUrl(filmUrl);
@@ -275,6 +274,20 @@ public class FilmController {
 
     @GetMapping("/from-list")
     public ResponseEntity<CustomResponseWrapper<List<FilmPreviewResponseDTO>>> getFilmsFromList(@RequestBody List<Long> filmIds) {
+
+        List<Film> films = filmService.getFilmsFromList(filmIds);
+
+        List<FilmPreviewResponseDTO> response = filmMapper.mapFilmToFilmPreviewResponseDTO(films);
+        CustomResponseWrapper<List<FilmPreviewResponseDTO>> wrapper = CustomResponseWrapper.<List<FilmPreviewResponseDTO>>builder()
+                .status(HttpStatus.OK.value())
+                .message("Films preview")
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping("/first-five-from-list")
+    public ResponseEntity<CustomResponseWrapper<List<FilmPreviewResponseDTO>>> getFirstFiveFilmsFromList(@RequestBody List<Long> filmIds) {
 
         List<Film> films = filmService.getFilmsFromList(filmIds);
 

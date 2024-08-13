@@ -1,36 +1,36 @@
 package com.seyan.activity.activity;
 
 import com.seyan.activity.dto.ActivityAndReviewCreationDTO;
-import com.seyan.activity.dto.ActivityOnFilmMapper;
+import com.seyan.activity.dto.ActivityMapper;
 import com.seyan.activity.exception.ActivityDeleteException;
 import com.seyan.activity.exception.ActivityNotFoundException;
-import com.seyan.activity.film.FilmClient;
+import com.seyan.activity.external.film.FilmClient;
 import com.seyan.activity.responsewrapper.CustomResponseWrapper;
-import com.seyan.activity.review.ReviewClient;
-import com.seyan.activity.review.ReviewCreationDTO;
+import com.seyan.activity.external.review.ReviewClient;
+import com.seyan.activity.external.review.ReviewCreationDTO;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
-public class ActivityOnFilmService {
-    private final ActivityOnFilmRepository activityRepository;
-    private final ActivityOnFilmMapper activityMapper;
+public class ActivityService {
+    private final ActivityRepository activityRepository;
+    private final ActivityMapper activityMapper;
     private final ReviewClient reviewClient;
     private final FilmClient filmClient;
 
-    public List<ActivityOnFilm> getActivityByUserIdAndByRatingGreaterThan(Long userId, Double rating) {
+    public List<Activity> getActivityByUserIdAndByRatingGreaterThan(Long userId, Double rating) {
         return activityRepository.findActivityByUserIdAndByRatingGreaterThan(userId, rating);
     }
 
     @Transactional
-    public ActivityOnFilm createOrUpdateActivity(ActivityAndReviewCreationDTO request) {
-        ActivityOnFilm activity = activityMapper.mapActivityAndReviewCreationDTOToActivityOnFilm(request);
+    public Activity createOrUpdateActivity(ActivityAndReviewCreationDTO request) {
+        Activity activity = activityMapper.mapActivityAndReviewCreationDTOToActivity(request);
 
         if (request.reviewContent() != null || request.watchedOnDate() != null) {
             ReviewCreationDTO dto = activityMapper.mapActivityAndReviewCreationDTOToReviewCreationDTO(request);
@@ -43,37 +43,37 @@ public class ActivityOnFilmService {
         return activityRepository.save(activity);
     }
 
-    public List<ActivityOnFilm> getWatchedFilmsActivities(Long userId) {
+    public List<Activity> getWatchedFilmsActivities(Long userId) {
         return activityRepository.findWatchedFilmsActivities(userId);
     }
 
-    public List<ActivityOnFilm> getWatchlist(Long userId) {
-        List<ActivityOnFilm> watchlist = activityRepository.findWatchlistByUserId(userId);
+    public List<Activity> getWatchlist(Long userId) {
+        List<Activity> watchlist = activityRepository.findWatchlistByUserId(userId);
         return watchlist.stream()
-                .sorted(Comparator.comparing(ActivityOnFilm::getWatchlistAddDate).reversed())
+                .sorted(Comparator.comparing(Activity::getWatchlistAddDate).reversed())
                 .toList();
     }
 
-    public List<ActivityOnFilm> getLikedFilmsActivities(Long userId) {
+    public List<Activity> getLikedFilmsActivities(Long userId) {
         return activityRepository.findLikedFilmsActivities(userId);
     }
 
-    public List<ActivityOnFilm> getAllActivities() {
+    public List<Activity> getAllActivities() {
         return activityRepository.findAll();
     }
 
-    public List<ActivityOnFilm> getAllActivitiesByUserId(Long userId) {
+    public List<Activity> getAllActivitiesByUserId(Long userId) {
         return activityRepository.findByUserId(userId);
     }
 
-    public ActivityOnFilm getActivityById(ActivityOnFilmId id) {
+    public Activity getActivityById(ActivityId id) {
         return activityRepository.findById(id).orElseThrow(() -> new ActivityNotFoundException(
                 String.format("No film activity found with the provided ID: %s", id)
         ));
     }
 
-    public ActivityOnFilm getOrCreateActivityById(ActivityOnFilmId id) {
-        return activityRepository.findById(id).orElseGet(() -> ActivityOnFilm.builder()
+    public Activity getOrCreateActivityById(ActivityId id) {
+        return activityRepository.findById(id).orElseGet(() -> Activity.builder()
                 .id(id)
                 .isWatched(false)
                 .isLiked(false)
@@ -84,8 +84,8 @@ public class ActivityOnFilmService {
     }
 
     @Transactional
-    public ActivityOnFilm updateIsLiked(Long userId, Long filmId) {
-        ActivityOnFilm activity = getOrCreateActivityById(new ActivityOnFilmId(userId, filmId));
+    public Activity updateIsLiked(Long userId, Long filmId) {
+        Activity activity = getOrCreateActivityById(new ActivityId(userId, filmId));
         if (activity.getIsLiked()) {
             activity.setIsLiked(false);
             filmClient.updateLikeCount(filmId, false);
@@ -97,8 +97,8 @@ public class ActivityOnFilmService {
     }
 
     @Transactional
-    public ActivityOnFilm updateRating(Long userId, Long filmId, Double rating) {
-        ActivityOnFilm activity = getOrCreateActivityById(new ActivityOnFilmId(userId, filmId));
+    public Activity updateRating(Long userId, Long filmId, Double rating) {
+        Activity activity = getOrCreateActivityById(new ActivityId(userId, filmId));
         activity.setRating(rating);
         activity.setIsWatched(true);
         activity.setIsInWatchlist(false);
@@ -109,8 +109,8 @@ public class ActivityOnFilmService {
     }
 
     @Transactional
-    public ActivityOnFilm removeRating(Long userId, Long filmId) {
-        ActivityOnFilm activity = getOrCreateActivityById(new ActivityOnFilmId(userId, filmId));
+    public Activity removeRating(Long userId, Long filmId) {
+        Activity activity = getOrCreateActivityById(new ActivityId(userId, filmId));
         activity.setRating(0.0);
         activityRepository.save(activity);
         Double avgRating = getFilmAvgRating(filmId);
@@ -123,8 +123,8 @@ public class ActivityOnFilmService {
     }
 
     @Transactional
-    public ActivityOnFilm updateIsWatched(Long userId, Long filmId) {
-        ActivityOnFilm activity = getOrCreateActivityById(new ActivityOnFilmId(userId, filmId));
+    public Activity updateIsWatched(Long userId, Long filmId) {
+        Activity activity = getOrCreateActivityById(new ActivityId(userId, filmId));
 
         if (activity.getIsWatched()) {
             boolean isHasReviews = checkIfHasReviews(userId, filmId);
@@ -143,6 +143,7 @@ public class ActivityOnFilmService {
         return activityRepository.save(activity);
     }
 
+    @RateLimiter(name = "responseBreaker", fallbackMethod = "checkIfHasReviewsFallback")
     private boolean checkIfHasReviews(Long userId, Long filmId) {
         CustomResponseWrapper<Long> response = reviewClient.countUserReviewsForFilm(userId, filmId)
                 .orElse(CustomResponseWrapper.<Long>builder().data(1L).build());
@@ -150,8 +151,12 @@ public class ActivityOnFilmService {
         return reviewCount > 0;
     }
 
-    public ActivityOnFilm updateIsInWatchlist(Long userId, Long filmId) {
-        ActivityOnFilm activity = getOrCreateActivityById(new ActivityOnFilmId(userId, filmId));
+    private boolean checkIfHasReviewsFallback(Exception e) {
+        return true;
+    }
+
+    public Activity updateIsInWatchlist(Long userId, Long filmId) {
+        Activity activity = getOrCreateActivityById(new ActivityId(userId, filmId));
 
         if (activity.getIsInWatchlist()) {
             activity.setIsInWatchlist(false);
@@ -163,7 +168,7 @@ public class ActivityOnFilmService {
         return activityRepository.save(activity);
     }
 
-    private void deleteIfEmpty(ActivityOnFilm activity) {
+    private void deleteIfEmpty(Activity activity) {
         if (!activity.getIsWatched()
                 & activity.getRating() == 0.0
                 & !activity.getIsLiked()
@@ -173,8 +178,8 @@ public class ActivityOnFilmService {
         }
     }
 
-    public ActivityOnFilm updateHasReview(Long userId, Long filmId) {
-        ActivityOnFilm activity = getOrCreateActivityById(new ActivityOnFilmId(userId, filmId));
+    public Activity updateHasReview(Long userId, Long filmId) {
+        Activity activity = getOrCreateActivityById(new ActivityId(userId, filmId));
         if (activity.getHasReview()) {
             activity.setHasReview(false);
         } else {

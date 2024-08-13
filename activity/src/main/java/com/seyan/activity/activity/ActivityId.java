@@ -11,7 +11,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Embeddable
-public class ActivityOnFilmId implements Serializable {
+public class ActivityId implements Serializable {
     private Long userId;
     private Long filmId;
 }

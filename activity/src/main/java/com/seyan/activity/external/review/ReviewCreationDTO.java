@@ -1,4 +1,4 @@
-package com.seyan.activity.review;
+package com.seyan.activity.external.review;
 
 import jakarta.validation.constraints.NotNull;
 

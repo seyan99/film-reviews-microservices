@@ -15,3 +15,38 @@ management:
   tracing:
     sampling:
       probability: 1.0
+  endpoints:
+    wep:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+# Resilience4J
+resilience4j:
+  circuitbreaker:
+    instances:
+      responseBreaker:
+        register-health-indicator: true
+        sliding-window-size: 10
+        permitted-number-of-calls-in-half-open-state: 3
+        wait-duration-in-open-state: 10s
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+        sliding-window-type: count_based
+  retry:
+    instances:
+      responseBreaker:
+        max-attempts: 5
+        wait-duration: 2s
+  ratelimiter:
+    instances:
+      responseBreaker:
+        limit-for-period: 5
+        limit-refresh-period: 60s
+        timeout-duration: 0s

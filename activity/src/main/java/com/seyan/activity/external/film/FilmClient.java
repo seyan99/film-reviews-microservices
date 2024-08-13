@@ -1,7 +1,8 @@
-package com.seyan.activity.film;
+package com.seyan.activity.external.film;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(
@@ -9,12 +10,12 @@ import org.springframework.web.bind.annotation.RequestParam;
         url = "${application.config.film-url}"
 )
 public interface FilmClient {
-    @PatchMapping("/{id}/update-like")
+    @PutMapping("/{id}/update-like-count")
     void updateLikeCount(@RequestParam("id") Long id, @RequestParam Boolean toAdd);
 
-    @PatchMapping("/update-avg-rating")
+    @PutMapping("/update-avg-rating")
     void updateAvgRating(@RequestParam("id") Long id, @RequestParam Double rating);
 
-    @PatchMapping("/update-watched-count")
+    @PutMapping("/update-watched-count")
     void updateWatchedCount(@RequestParam("id") Long id, @RequestParam Boolean toAdd);
 }

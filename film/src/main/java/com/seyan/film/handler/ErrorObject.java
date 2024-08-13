@@ -9,6 +9,6 @@ import lombok.Data;
 public class ErrorObject {
     private Integer status;
     private String message;
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String date;
 }

@@ -5,7 +5,7 @@ import com.seyan.review.dto.ReviewCreationDTO;
 import com.seyan.review.dto.ReviewMapper;
 import com.seyan.review.dto.ReviewUpdateDTO;
 import com.seyan.review.exception.ReviewNotFoundException;
-import com.seyan.review.external.activity.FilmClient;
+import com.seyan.review.external.film.FilmClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -73,7 +73,6 @@ public class ReviewService {
         return saved;
     }
 
-    //todo has your activity also if diary not yours
     public Page<Review> getReviewsByUsernameAsDiary(String username, Integer pageNo) {
         Sort sort = Sort.by(Sort.Direction.DESC, "creationDate");
         Pageable pageable = PageRequest.of(pageNo - 1, 25, sort);
