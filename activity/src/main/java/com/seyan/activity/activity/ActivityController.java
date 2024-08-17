@@ -3,6 +3,10 @@ package com.seyan.activity.activity;
 import com.seyan.activity.dto.ActivityAndReviewCreationDTO;
 import com.seyan.activity.dto.ActivityMapper;
 import com.seyan.activity.dto.ActivityResponseDTO;
+import com.seyan.activity.exception.ActivityDeleteException;
+import com.seyan.activity.external.review.ReviewCreationDTO;
+import com.seyan.activity.messaging.FilmMessageProducer;
+import com.seyan.activity.messaging.ReviewMessageProducer;
 import com.seyan.activity.responsewrapper.CustomResponseWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/activities")
@@ -18,6 +23,8 @@ import java.util.List;
 public class ActivityController {
     private final ActivityService activityService;
     private final ActivityMapper activityMapper;
+    private final ReviewMessageProducer reviewMessageProducer;
+    private final FilmMessageProducer filmMessageProducer;
 
     @GetMapping("/all")
     public ResponseEntity<CustomResponseWrapper<List<ActivityResponseDTO>>> getAllActivities() {
@@ -60,6 +67,12 @@ public class ActivityController {
     public ResponseEntity<CustomResponseWrapper<ActivityResponseDTO>> createOrUpdateActivity(@RequestBody @Valid ActivityAndReviewCreationDTO request) {
         Activity activity = activityService.createOrUpdateActivity(request);
         ActivityResponseDTO response = activityMapper.mapActivityToActivityResponseDTO(activity);
+
+        if (request.reviewContent() != null || request.watchedOnDate() != null) {
+            ReviewCreationDTO dto = activityMapper.mapActivityAndReviewCreationDTOToReviewCreationDTO(request);
+            reviewMessageProducer.createReview(dto);
+        }
+
         CustomResponseWrapper<ActivityResponseDTO> wrapper = CustomResponseWrapper.<ActivityResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("Film activity has been successfully created or updated")
@@ -134,6 +147,13 @@ public class ActivityController {
             @RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId) {
         Activity activity = activityService.updateIsLiked(userId, filmId);
         ActivityResponseDTO response = activityMapper.mapActivityToActivityResponseDTO(activity);
+
+        if (activity.getIsLiked()) {
+            filmMessageProducer.updateLikeCount(filmId, false);
+        } else {
+            filmMessageProducer.updateLikeCount(filmId, true);
+        }
+
         CustomResponseWrapper<ActivityResponseDTO> wrapper = CustomResponseWrapper.<ActivityResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("Like status has been updated")
@@ -147,6 +167,9 @@ public class ActivityController {
             @RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId, @RequestBody Double rating) {
         Activity activity = activityService.updateRating(userId, filmId, rating);
         ActivityResponseDTO response = activityMapper.mapActivityToActivityResponseDTO(activity);
+
+        filmMessageProducer.updateAvgRating(filmId, true);
+
         CustomResponseWrapper<ActivityResponseDTO> wrapper = CustomResponseWrapper.<ActivityResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("Rating has been updated")
@@ -161,9 +184,23 @@ public class ActivityController {
 
         Activity activity = activityService.removeRating(userId, filmId);
         ActivityResponseDTO response = activityMapper.mapActivityToActivityResponseDTO(activity);
+
+        filmMessageProducer.updateAvgRating(filmId, true);
+
         CustomResponseWrapper<ActivityResponseDTO> wrapper = CustomResponseWrapper.<ActivityResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("Rating has been removed")
+                .data(response)
+                .build();
+        return new ResponseEntity<>(wrapper, HttpStatus.OK);
+    }
+
+    @GetMapping("/avg-rating")
+    public ResponseEntity<CustomResponseWrapper<Double>> getAvgRating(@RequestParam("filmId") Long filmId) {
+        Double response = activityService.getFilmAvgRating(filmId);
+        CustomResponseWrapper<Double> wrapper = CustomResponseWrapper.<Double>builder()
+                .status(HttpStatus.OK.value())
+                .message(String.format("Avg rating for film with ID: %s", filmId))
                 .data(response)
                 .build();
         return new ResponseEntity<>(wrapper, HttpStatus.OK);
@@ -173,8 +210,11 @@ public class ActivityController {
     public ResponseEntity<CustomResponseWrapper<ActivityResponseDTO>> updateIsWatched(
             @RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId) {
 
-        Activity activity = activityService.updateIsWatched(userId, filmId);
-        ActivityResponseDTO response = activityMapper.mapActivityToActivityResponseDTO(activity);
+        Map<Boolean, Activity> activity = activityService.updateIsWatched(userId, filmId);
+        ActivityResponseDTO response = activityMapper.mapActivityToActivityResponseDTO(activity.values().stream().findFirst().get());
+
+        filmMessageProducer.updateWatchedCount(filmId, activity.keySet().stream().findFirst().get());
+
         CustomResponseWrapper<ActivityResponseDTO> wrapper = CustomResponseWrapper.<ActivityResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .message("Is watched status has been updated")

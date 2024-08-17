@@ -218,6 +218,16 @@ public class FilmService {
         return filmRepository.save(film);
     }
 
+    public void updateAvgRating(Long filmId, Boolean toAdd) {
+        Film film = filmRepository.findById(filmId).orElseThrow(() -> new FilmNotFoundException(
+                String.format("No film found with the provided ID: %s", filmId)));
+        if (toAdd) {
+            Double rating = activityClient.getAvgRating(filmId).getData();
+            film.setAvgRating(rating);
+            filmRepository.save(film);
+        }
+    }
+
     public void deleteFilm(Long id) {
         filmRepository.findById(id).orElseThrow(() -> new FilmNotFoundException(
                 String.format("No film found with the provided ID: %s", id)));

@@ -6,6 +6,8 @@ import com.seyan.review.dto.ReviewMapper;
 import com.seyan.review.dto.ReviewUpdateDTO;
 import com.seyan.review.exception.ReviewNotFoundException;
 import com.seyan.review.external.film.FilmClient;
+import com.seyan.review.messaging.ActivityMessageProducer;
+import com.seyan.review.messaging.FilmMessageProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +26,8 @@ public class ReviewService {
     private final ReviewMapper reviewMapper;
     private final ActivityClient activityClient;
     private final FilmClient filmClient;
+    private final ActivityMessageProducer activityMessageProducer;
+    private final FilmMessageProducer filmMessageProducer;
 
     public Review addReviewComment(Long reviewId, Long commentId) {
         Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewNotFoundException(
@@ -58,7 +62,7 @@ public class ReviewService {
         return reviewRepository.save(review);
     }
 
-    @Transactional
+    /*@Transactional
     public Review createReview(ReviewCreationDTO dto) {
         int reviewsCount = reviewRepository.countByUserIdAndFilmIdAndContentNotNull(dto.userId(), dto.filmId());
 
@@ -69,6 +73,20 @@ public class ReviewService {
             activityClient.updateHasReview(dto.userId(), dto.filmId());
         }
         filmClient.updateReviewCount(dto.filmId(), true);
+
+        return saved;
+    }*/
+
+    public Review createReview(ReviewCreationDTO dto) {
+        int reviewsCount = reviewRepository.countByUserIdAndFilmIdAndContentNotNull(dto.userId(), dto.filmId());
+
+        Review review = reviewMapper.mapReviewCreationDTOToReview(dto);
+        Review saved = reviewRepository.save(review);
+
+        if (reviewsCount < 1 && dto.content() != null) {
+            activityMessageProducer.updateHasReview(dto.filmId(), dto.userId());
+        }
+        filmMessageProducer.updateReviewCount(dto.filmId(), true);
 
         return saved;
     }
@@ -88,7 +106,7 @@ public class ReviewService {
         return reviewRepository.save(mapped);
     }
 
-    @Transactional
+    /*@Transactional
     public void deleteReview(Long id) {
         Review review = reviewRepository.findById(id).orElseThrow(() -> new ReviewNotFoundException(
                 String.format("Cannot delete review:: No review found with the provided ID: %s", id)));
@@ -101,6 +119,20 @@ public class ReviewService {
             activityClient.updateHasReview(review.getUserId(), review.getFilmId());
         }
         filmClient.updateReviewCount(review.getFilmId(), false);
+    }*/
+
+    public void deleteReview(Long id) {
+        Review review = reviewRepository.findById(id).orElseThrow(() -> new ReviewNotFoundException(
+                String.format("Cannot delete review:: No review found with the provided ID: %s", id)));
+
+        reviewRepository.deleteById(id);
+
+        int reviewsCount = reviewRepository.countByUserIdAndFilmIdAndContentNotNull(review.getUserId(), review.getFilmId());
+
+        if (reviewsCount == 0) {
+            activityMessageProducer.updateHasReview(review.getFilmId(), review.getUserId());
+        }
+        filmMessageProducer.updateReviewCount(review.getFilmId(), false);
     }
 
     public int countUserReviewsForFilm(Long userId, Long filmId) {

@@ -3,6 +3,7 @@ package com.seyan.film.external.activity;
 
 import com.seyan.film.responsewrapper.CustomResponseWrapper;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -21,4 +22,7 @@ public interface ActivityClient {
 
     @GetMapping("/on-film")
     CustomResponseWrapper<ActivityOnFilmResponseDTO> getFilmActivity(@RequestParam("userId") Long userId, @RequestParam("filmId") Long filmId);
+
+    @GetMapping("/avg-rating")
+     CustomResponseWrapper<Double> getAvgRating(@RequestParam("filmId") Long filmId);
 }

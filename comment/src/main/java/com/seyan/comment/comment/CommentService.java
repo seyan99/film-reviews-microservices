@@ -6,6 +6,8 @@ import com.seyan.comment.dto.CommentUpdateDTO;
 import com.seyan.comment.exception.CommentNotFoundException;
 import com.seyan.comment.external.filmlist.FilmListClient;
 import com.seyan.comment.external.review.ReviewClient;
+import com.seyan.comment.messaging.ListMessageProducer;
+import com.seyan.comment.messaging.ReviewMessageProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,7 +28,10 @@ public class CommentService {
     private final ReviewClient reviewClient;
     private final FilmListClient filmListClient;
 
-    @Transactional
+    private final ReviewMessageProducer reviewMessageProducer;
+    private final ListMessageProducer listMessageProducer;
+
+    /*@Transactional
     public Comment createComment(CommentCreationDTO dto, PostType postType) {
         Comment comment = commentMapper.mapCommentCreationDTOToComment(dto);
         comment.setPostType(postType);
@@ -37,6 +42,21 @@ public class CommentService {
             reviewClient.addReviewComment(dto.postId(), saved.getId());
         } else {
             filmListClient.addListComment(dto.postId(), saved.getId());
+        }
+
+        return saved;
+    }*/
+
+    public Comment createComment(CommentCreationDTO dto, PostType postType) {
+        Comment comment = commentMapper.mapCommentCreationDTOToComment(dto);
+        comment.setPostType(postType);
+        comment.setIsEdited(false);
+        Comment saved = commentRepository.save(comment);
+
+        if (postType == PostType.REVIEW) {
+            reviewMessageProducer.addReviewComment(dto.postId(), saved.getId());
+        } else {
+            listMessageProducer.addListComment(dto.postId(), saved.getId());
         }
 
         return saved;
@@ -88,7 +108,7 @@ public class CommentService {
         return commentRepository.save(mapped);
     }
 
-    @Transactional
+    /*@Transactional
     public void deleteComment(Long id) {
         Comment comment = commentRepository.findById(id).orElseThrow(() -> new CommentNotFoundException(
                 String.format("Cannot delete comment:: No comment found with the provided ID: %s", id)));
@@ -98,6 +118,18 @@ public class CommentService {
             reviewClient.deleteReviewComment(comment.getPostId(), comment.getId());
         } else {
             filmListClient.deleteListComment(comment.getPostId(), comment.getId());
+        }
+    }*/
+
+    public void deleteComment(Long id) {
+        Comment comment = commentRepository.findById(id).orElseThrow(() -> new CommentNotFoundException(
+                String.format("Cannot delete comment:: No comment found with the provided ID: %s", id)));
+        commentRepository.deleteById(id);
+
+        if (comment.getPostType() == PostType.REVIEW) {
+            reviewMessageProducer.deleteReviewComment(comment.getPostId(), comment.getId());
+        } else {
+            listMessageProducer.deleteListComment(comment.getPostId(), comment.getId());
         }
     }
 
