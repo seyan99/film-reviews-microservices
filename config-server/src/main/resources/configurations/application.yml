@@ -10,6 +10,11 @@ spring:
   cloud:
     config:
       override-system-properties: false
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
 
 management:
   tracing:

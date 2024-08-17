@@ -59,40 +59,20 @@ services:
       - ME_CONFIG_MONGODB_ADMINPASSWORD=your_admin_password
       - ME_CONFIG_MONGODB_SERVER=mongodb
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    container_name: zookeeper
-    environment:
-      ZOOKEEPER_SERVER_ID: 1
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+  rabbitmq:
+    image: rabbitmq:3.13.6-management
+    container_name: 'rabbitmq'
     ports:
-      - "22181:2181"
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
     networks:
-      - microservices-net
-  kafka:
-    image: confluentinc/cp-kafka:latest
-    container_name: ms_kafka
-    ports:
-      - "9092:9092"
-    depends_on:
-      - zookeeper
+      - rabbitmq_go_net
     environment:
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-    networks:
-      - microservices-net
-
-  mail-dev:
-    container_name: ms-mail-dev
-    image: maildev/maildev
-    ports:
-      - "1080:1080"
-      - "1025:1025"
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
 
 networks:
   microservices-net:
