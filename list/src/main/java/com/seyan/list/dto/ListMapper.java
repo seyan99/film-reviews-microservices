@@ -109,7 +109,7 @@ public class ListMapper {
                 list.getLikedUsersIds().size(),
                 //Collections.emptyList(),
                 list.getCommentIds().size(),
-                //Collections.emptyList(),
+                Collections.emptyList(),
                 list.getFilmIds().size(),
                 list.getCreationDate(),
                 list.getLastUpdateDate()

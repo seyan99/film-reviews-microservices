@@ -208,6 +208,10 @@ public class ReviewService {
         } else {
             Sort sort = Sort.by(Sort.Direction.ASC, "id");
             List<Review> reviews = reviewRepository.findByUsernameAndTitleAndContentNotNull(username, title, sort);
+            if (reviews.size() < 1) {
+                throw new ReviewNotFoundException(
+                        String.format("No reviews found with the provided username: %s and title: %s", username, title));
+            }
             return reviews.get(0);
         }
     }

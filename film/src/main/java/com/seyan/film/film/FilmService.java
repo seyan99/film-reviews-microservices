@@ -271,6 +271,9 @@ public class FilmService {
             film.setReviewCount(film.getReviewCount() - 1);
         }
 
+        Double rating = activityClient.getAvgRating(filmId).getData();
+        film.setAvgRating(rating);
+
         return filmRepository.save(film);
     }
 }

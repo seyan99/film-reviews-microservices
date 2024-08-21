@@ -248,7 +248,7 @@ public class ReviewController {
     }
 
     @GetMapping({"/user/{username}/title/{title}", "/user/{username}/title/{title}/{reviewId}"})
-    public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> getReviewsByUsernameAndTitle(
+    public ResponseEntity<CustomResponseWrapper<ReviewResponseDTO>> getReviewByUsernameAndTitle(
             @PathVariable String username,  @PathVariable String title, @PathVariable Optional<Long> reviewId) {
 
         Review review = reviewService.getReviewByUsernameAndTitle(username, title, reviewId);

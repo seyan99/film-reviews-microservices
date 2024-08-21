@@ -3,7 +3,6 @@ package com.seyan.activity.activity;
 import com.seyan.activity.dto.ActivityAndReviewCreationDTO;
 import com.seyan.activity.dto.ActivityMapper;
 import com.seyan.activity.dto.ActivityResponseDTO;
-import com.seyan.activity.exception.ActivityDeleteException;
 import com.seyan.activity.external.review.ReviewCreationDTO;
 import com.seyan.activity.messaging.FilmMessageProducer;
 import com.seyan.activity.messaging.ReviewMessageProducer;
@@ -71,6 +70,7 @@ public class ActivityController {
         if (request.reviewContent() != null || request.watchedOnDate() != null) {
             ReviewCreationDTO dto = activityMapper.mapActivityAndReviewCreationDTOToReviewCreationDTO(request);
             reviewMessageProducer.createReview(dto);
+            filmMessageProducer.updateWatchedCount(request.filmId(), true);
         }
 
         CustomResponseWrapper<ActivityResponseDTO> wrapper = CustomResponseWrapper.<ActivityResponseDTO>builder()
@@ -149,9 +149,9 @@ public class ActivityController {
         ActivityResponseDTO response = activityMapper.mapActivityToActivityResponseDTO(activity);
 
         if (activity.getIsLiked()) {
-            filmMessageProducer.updateLikeCount(filmId, false);
-        } else {
             filmMessageProducer.updateLikeCount(filmId, true);
+        } else {
+            filmMessageProducer.updateLikeCount(filmId, false);
         }
 
         CustomResponseWrapper<ActivityResponseDTO> wrapper = CustomResponseWrapper.<ActivityResponseDTO>builder()

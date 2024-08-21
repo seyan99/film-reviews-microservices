@@ -1,14 +1,18 @@
 package com.seyan.activity.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.seyan.activity.activity.Activity;
 import com.seyan.activity.activity.ActivityId;
 import com.seyan.activity.external.review.ReviewCreationDTO;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.stereotype.Component;
 
 import java.beans.PropertyDescriptor;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -70,8 +74,11 @@ public class ActivityMapper {
                 dto.isLiked(),
                 dto.reviewContent(),
                 dto.containsSpoilers(),
+                dto.creationDate(),
                 dto.filmId(),
+                dto.title(),
                 dto.userId(),
+                dto.username(),
                 dto.watchedOnDate(),
                 dto.watchedThisFilmBefore()
         );
