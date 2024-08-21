@@ -5,7 +5,7 @@ Currently in active development.
 
 Basically, all service functionality the same as Letterboxd.
 
-Architecture consists of config server, discovery, gateway and 6 main microservices.
+Architecture consists of config server, discovery, gateway, authentication and 6 other main microservices.
 
 **1. Activity service** represents user's activity on film:  
 - like
@@ -23,4 +23,4 @@ Architecture consists of config server, discovery, gateway and 6 main microservi
 
 **6. User service** responsible for user info and networking.
 
-In active development: fault tolerance, jwt-based authentication\authorization, notification and message queuing, db\server-side filtering with pagination and other improvements.
+In active development: jwt-based authentication\authorization and other improvements.
